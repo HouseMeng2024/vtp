@@ -70,6 +70,7 @@ DB_USER = root
 DB_PASS =
 DB_PORT = 3306
 DB_CHARSET = utf8mb4
+DB_PREFIX = vtp_
 
 DEFAULT_LANG = zh-cn
 ```
@@ -174,6 +175,7 @@ admin-web/dist
 
 - 默认字符集使用 `utf8mb4`。
 - 默认排序规则使用 `utf8mb4_unicode_ci`。
+- 数据库表统一使用 `vtp_` 前缀，模型和代码生成器配置里仍使用不带前缀的逻辑表名。
 - SQL 尽量兼容 MySQL 5.7。
 - 表结构维护在 `database/admin_schema.sql`。
 - 业务开发优先使用 ThinkPHP Model。

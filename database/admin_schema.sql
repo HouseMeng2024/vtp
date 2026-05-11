@@ -6,8 +6,8 @@
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
-DROP TABLE IF EXISTS `admin_user`;
-CREATE TABLE `admin_user` (
+DROP TABLE IF EXISTS `vtp_admin_user`;
+CREATE TABLE `vtp_admin_user` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
   `username` varchar(50) NOT NULL COMMENT '登录账号',
   `password` varchar(255) NOT NULL COMMENT '登录密码哈希',
@@ -27,8 +27,8 @@ CREATE TABLE `admin_user` (
   KEY `idx_delete_time` (`delete_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='后台管理员';
 
-DROP TABLE IF EXISTS `admin_role`;
-CREATE TABLE `admin_role` (
+DROP TABLE IF EXISTS `vtp_admin_role`;
+CREATE TABLE `vtp_admin_role` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
   `name` varchar(50) NOT NULL COMMENT '角色名称',
   `code` varchar(50) NOT NULL COMMENT '角色标识',
@@ -46,8 +46,8 @@ CREATE TABLE `admin_role` (
   KEY `idx_delete_time` (`delete_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='后台角色';
 
-DROP TABLE IF EXISTS `admin_menu`;
-CREATE TABLE `admin_menu` (
+DROP TABLE IF EXISTS `vtp_admin_menu`;
+CREATE TABLE `vtp_admin_menu` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
   `parent_id` bigint unsigned NOT NULL DEFAULT '0' COMMENT '父级ID',
   `type` tinyint unsigned NOT NULL DEFAULT '2' COMMENT '类型：1目录 2菜单 3按钮/API权限',
@@ -71,8 +71,8 @@ CREATE TABLE `admin_menu` (
   KEY `idx_delete_time` (`delete_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='后台菜单权限';
 
-DROP TABLE IF EXISTS `admin_user_role`;
-CREATE TABLE `admin_user_role` (
+DROP TABLE IF EXISTS `vtp_admin_user_role`;
+CREATE TABLE `vtp_admin_user_role` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
   `user_id` bigint unsigned NOT NULL COMMENT '管理员ID',
   `role_id` bigint unsigned NOT NULL COMMENT '角色ID',
@@ -82,8 +82,8 @@ CREATE TABLE `admin_user_role` (
   KEY `idx_role_id` (`role_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='管理员角色关联';
 
-DROP TABLE IF EXISTS `admin_role_menu`;
-CREATE TABLE `admin_role_menu` (
+DROP TABLE IF EXISTS `vtp_admin_role_menu`;
+CREATE TABLE `vtp_admin_role_menu` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
   `role_id` bigint unsigned NOT NULL COMMENT '角色ID',
   `menu_id` bigint unsigned NOT NULL COMMENT '菜单权限ID',
@@ -93,8 +93,8 @@ CREATE TABLE `admin_role_menu` (
   KEY `idx_menu_id` (`menu_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='角色菜单权限关联';
 
-DROP TABLE IF EXISTS `admin_login_log`;
-CREATE TABLE `admin_login_log` (
+DROP TABLE IF EXISTS `vtp_admin_login_log`;
+CREATE TABLE `vtp_admin_login_log` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
   `user_id` bigint unsigned NOT NULL DEFAULT '0' COMMENT '管理员ID',
   `username` varchar(50) NOT NULL DEFAULT '' COMMENT '登录账号',
@@ -110,8 +110,8 @@ CREATE TABLE `admin_login_log` (
   KEY `idx_create_time` (`create_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='后台登录日志';
 
-DROP TABLE IF EXISTS `admin_operate_log`;
-CREATE TABLE `admin_operate_log` (
+DROP TABLE IF EXISTS `vtp_admin_operate_log`;
+CREATE TABLE `vtp_admin_operate_log` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
   `user_id` bigint unsigned NOT NULL DEFAULT '0' COMMENT '管理员ID',
   `username` varchar(50) NOT NULL DEFAULT '' COMMENT '管理员账号',
@@ -132,8 +132,8 @@ CREATE TABLE `admin_operate_log` (
   KEY `idx_create_time` (`create_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='后台操作日志';
 
-DROP TABLE IF EXISTS `admin_notice`;
-CREATE TABLE `admin_notice` (
+DROP TABLE IF EXISTS `vtp_admin_notice`;
+CREATE TABLE `vtp_admin_notice` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
   `title` varchar(100) NOT NULL COMMENT '消息标题',
   `content` varchar(500) NOT NULL DEFAULT '' COMMENT '消息内容',
@@ -152,8 +152,8 @@ CREATE TABLE `admin_notice` (
   KEY `idx_delete_time` (`delete_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='后台消息通知';
 
-DROP TABLE IF EXISTS `admin_notice_read`;
-CREATE TABLE `admin_notice_read` (
+DROP TABLE IF EXISTS `vtp_admin_notice_read`;
+CREATE TABLE `vtp_admin_notice_read` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
   `user_id` bigint unsigned NOT NULL COMMENT '管理员ID',
   `notice_id` bigint unsigned NOT NULL COMMENT '消息ID',
@@ -163,8 +163,8 @@ CREATE TABLE `admin_notice_read` (
   KEY `idx_notice_id` (`notice_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='后台消息已读记录';
 
-DROP TABLE IF EXISTS `system_config`;
-CREATE TABLE `system_config` (
+DROP TABLE IF EXISTS `vtp_system_config`;
+CREATE TABLE `vtp_system_config` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
   `group` varchar(50) NOT NULL DEFAULT 'default' COMMENT '配置分组',
   `key` varchar(100) NOT NULL COMMENT '配置键',
@@ -178,9 +178,9 @@ CREATE TABLE `system_config` (
   UNIQUE KEY `uk_group_key` (`group`, `key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='系统配置';
 
-DROP TABLE IF EXISTS `upload_file`;
-DROP TABLE IF EXISTS `member`;
-CREATE TABLE `member` (
+DROP TABLE IF EXISTS `vtp_upload_file`;
+DROP TABLE IF EXISTS `vtp_member`;
+CREATE TABLE `vtp_member` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
   `username` varchar(50) NOT NULL DEFAULT '' COMMENT '用户名',
   `nickname` varchar(50) NOT NULL DEFAULT '' COMMENT '昵称',
@@ -207,7 +207,7 @@ CREATE TABLE `member` (
   KEY `idx_delete_time` (`delete_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='会员';
 
-CREATE TABLE `upload_file` (
+CREATE TABLE `vtp_upload_file` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
   `disk` varchar(30) NOT NULL DEFAULT 'local' COMMENT '存储磁盘',
   `path` varchar(500) NOT NULL COMMENT '文件路径',
@@ -231,8 +231,8 @@ CREATE TABLE `upload_file` (
   KEY `idx_delete_time` (`delete_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='上传文件';
 
-DROP TABLE IF EXISTS `dict_type`;
-CREATE TABLE `dict_type` (
+DROP TABLE IF EXISTS `vtp_dict_type`;
+CREATE TABLE `vtp_dict_type` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
   `name` varchar(50) NOT NULL COMMENT '字典名称',
   `type` varchar(100) NOT NULL COMMENT '字典标识',
@@ -249,8 +249,8 @@ CREATE TABLE `dict_type` (
   KEY `idx_delete_time` (`delete_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='字典类型';
 
-DROP TABLE IF EXISTS `dict_data`;
-CREATE TABLE `dict_data` (
+DROP TABLE IF EXISTS `vtp_dict_data`;
+CREATE TABLE `vtp_dict_data` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
   `type_id` bigint unsigned NOT NULL COMMENT '字典类型ID',
   `label` varchar(100) NOT NULL COMMENT '字典标签',
@@ -270,16 +270,16 @@ CREATE TABLE `dict_data` (
   KEY `idx_delete_time` (`delete_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='字典数据';
 
-INSERT INTO `admin_user` (`id`, `username`, `password`, `nickname`, `status`, `create_time`, `update_time`) VALUES
+INSERT INTO `vtp_admin_user` (`id`, `username`, `password`, `nickname`, `status`, `create_time`, `update_time`) VALUES
 (1, 'admin', '$2y$12$b8EX2nGi7gpIKwRra/RJjOGi4nUBCQv1NVgEa4.SAsoXRtcBRddlm', '超级管理员', 1, NOW(), NOW());
 
-INSERT INTO `admin_role` (`id`, `name`, `code`, `sort`, `status`, `data_scope`, `remark`, `create_time`, `update_time`) VALUES
+INSERT INTO `vtp_admin_role` (`id`, `name`, `code`, `sort`, `status`, `data_scope`, `remark`, `create_time`, `update_time`) VALUES
 (1, '超级管理员', 'super_admin', 1, 1, 'all', '拥有全部权限', NOW(), NOW());
 
-INSERT INTO `admin_user_role` (`user_id`, `role_id`, `create_time`) VALUES
+INSERT INTO `vtp_admin_user_role` (`user_id`, `role_id`, `create_time`) VALUES
 (1, 1, NOW());
 
-INSERT INTO `system_config` (`group`, `key`, `value`, `type`, `name`, `remark`, `create_time`, `update_time`) VALUES
+INSERT INTO `vtp_system_config` (`group`, `key`, `value`, `type`, `name`, `remark`, `create_time`, `update_time`) VALUES
 ('basic', 'site_name', 'VTP Admin', 'text', '站点名称', '后台和项目默认显示名称', NOW(), NOW()),
 ('basic', 'admin_title', 'VTP Admin', 'text', '后台标题', '后台浏览器标题和顶部品牌名称', NOW(), NOW()),
 ('basic', 'site_logo', '', 'image', '站点 Logo', '填写图片 URL，用于后台品牌展示', NOW(), NOW()),
@@ -295,17 +295,17 @@ INSERT INTO `system_config` (`group`, `key`, `value`, `type`, `name`, `remark`, 
 ('security', 'login_max_attempts', '5', 'number', '登录失败次数', '达到次数后临时锁定', NOW(), NOW()),
 ('security', 'login_lock_seconds', '900', 'number', '登录锁定时长', '单位秒', NOW(), NOW());
 
-INSERT INTO `dict_type` (`id`, `name`, `type`, `sort`, `status`, `remark`, `create_time`, `update_time`) VALUES
+INSERT INTO `vtp_dict_type` (`id`, `name`, `type`, `sort`, `status`, `remark`, `create_time`, `update_time`) VALUES
 (1, '通用状态', 'common_status', 1, 1, '通用启用禁用状态', NOW(), NOW()),
 (2, '开关状态', 'switch_status', 2, 1, '通用开关状态', NOW(), NOW());
 
-INSERT INTO `dict_data` (`type_id`, `label`, `value`, `tag_type`, `sort`, `status`, `remark`, `create_time`, `update_time`) VALUES
+INSERT INTO `vtp_dict_data` (`type_id`, `label`, `value`, `tag_type`, `sort`, `status`, `remark`, `create_time`, `update_time`) VALUES
 (1, '正常', '1', 'success', 1, 1, '', NOW(), NOW()),
 (1, '禁用', '0', 'info', 2, 1, '', NOW(), NOW()),
 (2, '开启', '1', 'success', 1, 1, '', NOW(), NOW()),
 (2, '关闭', '0', 'info', 2, 1, '', NOW(), NOW());
 
-INSERT INTO `admin_menu` (`id`, `parent_id`, `type`, `title`, `permission`, `path`, `component`, `icon`, `sort`, `visible`, `status`, `create_time`, `update_time`) VALUES
+INSERT INTO `vtp_admin_menu` (`id`, `parent_id`, `type`, `title`, `permission`, `path`, `component`, `icon`, `sort`, `visible`, `status`, `create_time`, `update_time`) VALUES
 (1, 0, 1, '系统管理', '', '/system', '', 'Setting', 400, 1, 1, NOW(), NOW()),
 (2, 48, 2, '管理员管理', 'admin:user:list', '/permission/users', 'system/user/index', 'User', 100, 1, 1, NOW(), NOW()),
 (3, 2, 3, '新增管理员', 'admin:user:create', '', '', '', 100, 0, 1, NOW(), NOW()),
@@ -363,10 +363,10 @@ INSERT INTO `admin_menu` (`id`, `parent_id`, `type`, `title`, `permission`, `pat
 (55, 51, 3, '重置会员密码', 'admin:member:reset-password', '', '', '', 103, 0, 1, NOW(), NOW()),
 (56, 51, 3, '删除会员', 'admin:member:delete', '', '', '', 104, 0, 1, NOW(), NOW());
 
-INSERT INTO `admin_notice` (`title`, `content`, `type`, `scope_type`, `scope_ids`, `popup`, `status`, `create_time`, `update_time`) VALUES
+INSERT INTO `vtp_admin_notice` (`title`, `content`, `type`, `scope_type`, `scope_ids`, `popup`, `status`, `create_time`, `update_time`) VALUES
 ('系统初始化完成', '通用后台基础模块已经启用，可以继续扩展业务功能。', 'success', 'all', '', 0, 1, NOW(), NOW());
 
-INSERT INTO `admin_role_menu` (`role_id`, `menu_id`, `create_time`)
-SELECT 1, `id`, NOW() FROM `admin_menu`;
+INSERT INTO `vtp_admin_role_menu` (`role_id`, `menu_id`, `create_time`)
+SELECT 1, `id`, NOW() FROM `vtp_admin_menu`;
 
 SET FOREIGN_KEY_CHECKS = 1;

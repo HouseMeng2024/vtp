@@ -88,22 +88,23 @@
 
 - 默认字符集使用 `utf8mb4`。
 - 排序规则优先使用 `utf8mb4_unicode_ci`，通用性和多语言排序更稳。
+- 数据库真实表统一使用 `vtp_` 前缀，模型和代码生成器配置仍写不带前缀的逻辑表名。
 - SQL 兼容 MySQL 5.7，避免使用只在 MySQL 8+ 才支持的语法。
 - 通用后台表当前包括：
-  - `admin_user`
-  - `admin_role`
-  - `admin_menu`
-  - `admin_user_role`
-  - `admin_role_menu`
-  - `admin_login_log`
-  - `admin_operate_log`
-  - `admin_notice`
-  - `admin_notice_read`
-  - `member`
-  - `system_config`
-  - `upload_file`
-  - `dict_type`
-  - `dict_data`
+  - `vtp_admin_user`
+  - `vtp_admin_role`
+  - `vtp_admin_menu`
+  - `vtp_admin_user_role`
+  - `vtp_admin_role_menu`
+  - `vtp_admin_login_log`
+  - `vtp_admin_operate_log`
+  - `vtp_admin_notice`
+  - `vtp_admin_notice_read`
+  - `vtp_member`
+  - `vtp_system_config`
+  - `vtp_upload_file`
+  - `vtp_dict_type`
+  - `vtp_dict_data`
 
 ## 本地运行
 
@@ -145,5 +146,4 @@ php worker/start.php start -d
 - 修改前端后运行 `cd admin-web && yarn build`。
 - 涉及页面布局和交互时，需要实际打开页面检查。
 - 不要提交 vendor、node_modules、runtime 日志等生成内容。
-
 

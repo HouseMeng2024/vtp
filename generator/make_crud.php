@@ -39,6 +39,7 @@ final class CrudGenerator
     private string $camel;
     private string $route;
     private string $outputDir;
+    private string $tablePrefix;
     private array $fields;
 
     public function __construct(private array $config)
@@ -46,6 +47,7 @@ final class CrudGenerator
         $this->module = $this->normalizeName((string) ($config['module'] ?? ''));
         $this->title = trim((string) ($config['title'] ?? ''));
         $this->table = $this->normalizeName((string) ($config['table'] ?? $this->module));
+        $this->tablePrefix = $this->normalizeTablePrefix((string) ($config['table_prefix'] ?? ''));
         $this->fields = $config['fields'] ?? [];
 
         if ($this->module === '' || $this->title === '' || !$this->fields) {
@@ -597,6 +599,7 @@ TS;
     {
         $columns = '';
         $indexes = '';
+        $table = $this->physicalTable($this->table);
 
         foreach ($this->fields as $field) {
             $columns .= '  `' . $field['name'] . '` ' . $this->sqlType($field) . " COMMENT '" . $field['label'] . "',\n";
@@ -607,7 +610,7 @@ TS;
         }
 
         return <<<SQL
-CREATE TABLE IF NOT EXISTS `{$this->table}` (
+CREATE TABLE IF NOT EXISTS `{$table}` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
 {$columns}  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
@@ -621,6 +624,7 @@ SQL;
 
     private function menuSql(): string
     {
+        $menuTable = $this->physicalTable('admin_menu');
         $status = $this->statusField()
             ? "(@menu_id, 3, '启用禁用{$this->title}', 'admin:{$this->module}:status', '', '', '', 102, 0, 1, NOW(), NOW()),\n"
             : '';
@@ -629,17 +633,26 @@ SQL;
 -- 请先确认 @parent_id 是目标父级菜单 ID
 SET @parent_id = 0;
 
-INSERT INTO `admin_menu` (`parent_id`, `type`, `title`, `permission`, `path`, `component`, `icon`, `sort`, `visible`, `status`, `create_time`, `update_time`) VALUES
+INSERT INTO `{$menuTable}` (`parent_id`, `type`, `title`, `permission`, `path`, `component`, `icon`, `sort`, `visible`, `status`, `create_time`, `update_time`) VALUES
 (@parent_id, 2, '{$this->title}管理', 'admin:{$this->module}:list', '/{$this->route}', '{$this->module}/index', 'Document', 100, 1, 1, NOW(), NOW());
 
 SET @menu_id = LAST_INSERT_ID();
 
-INSERT INTO `admin_menu` (`parent_id`, `type`, `title`, `permission`, `path`, `component`, `icon`, `sort`, `visible`, `status`, `create_time`, `update_time`) VALUES
+INSERT INTO `{$menuTable}` (`parent_id`, `type`, `title`, `permission`, `path`, `component`, `icon`, `sort`, `visible`, `status`, `create_time`, `update_time`) VALUES
 (@menu_id, 3, '新增{$this->title}', 'admin:{$this->module}:create', '', '', '', 100, 0, 1, NOW(), NOW()),
 (@menu_id, 3, '编辑{$this->title}', 'admin:{$this->module}:update', '', '', '', 101, 0, 1, NOW(), NOW()),
 {$status}(@menu_id, 3, '删除{$this->title}', 'admin:{$this->module}:delete', '', '', '', 103, 0, 1, NOW(), NOW());
 
 SQL;
+    }
+
+    private function physicalTable(string $table): string
+    {
+        if ($this->tablePrefix === '' || str_starts_with($table, $this->tablePrefix)) {
+            return $table;
+        }
+
+        return $this->tablePrefix . $table;
     }
 
     private function filterPayloadPhp(): string
@@ -1309,6 +1322,11 @@ PHP;
     private function normalizeName(string $name): string
     {
         return strtolower(trim(preg_replace('/[^a-zA-Z0-9_]/', '_', $name) ?? '', '_'));
+    }
+
+    private function normalizeTablePrefix(string $prefix): string
+    {
+        return strtolower(preg_replace('/[^a-zA-Z0-9_]/', '_', $prefix) ?? '');
     }
 
     private function studly(string $value): string

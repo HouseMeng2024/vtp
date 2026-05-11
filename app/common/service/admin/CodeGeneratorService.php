@@ -55,7 +55,7 @@ class CodeGeneratorService
         if ($options['execute_schema']) {
             $checks['database'][] = [
                 'label' => $config['table'],
-                'path' => $config['table'],
+                'path' => $this->physicalTable($config['table']),
                 'exists' => $this->tableExists($config['table']),
             ];
         }
@@ -203,8 +203,8 @@ class CodeGeneratorService
         }
 
         if ($table !== '' && $this->tableExists($table)) {
-            Db::execute('DROP TABLE IF EXISTS `' . str_replace('`', '', $table) . '`');
-            $deleted[] = '数据表：' . $table;
+            $this->dropTable($table);
+            $deleted[] = '数据表：' . $this->physicalTable($table);
         }
 
         return [
@@ -268,6 +268,7 @@ class CodeGeneratorService
             'module'      => $module,
             'title'       => $title,
             'table'       => $table,
+            'table_prefix' => $this->tablePrefix(),
             'route_path'  => $this->normalizeRoutePath($routePath !== '' ? $routePath : $module),
             'menu_parent' => $this->normalizeName((string) ($payload['menu_parent'] ?? '')),
             'fields'      => $this->normalizeFields($fields),
@@ -439,7 +440,7 @@ class CodeGeneratorService
         }
 
         if (!$snapshot['table_exists'] && $this->tableExists($snapshot['table'])) {
-            Db::execute('DROP TABLE IF EXISTS `' . str_replace('`', '', $snapshot['table']) . '`');
+            $this->dropTable($snapshot['table']);
         }
     }
 
@@ -673,6 +674,7 @@ class CodeGeneratorService
         }
 
         foreach (array_filter(array_map('trim', explode(';', $sql))) as $statement) {
+            $statement = $this->applyTablePrefixToSql($statement);
             Db::execute($statement);
             $this->syncCreateTableSchema($statement);
         }
@@ -722,6 +724,8 @@ class CodeGeneratorService
      */
     private function existingColumns(string $table): array
     {
+        $table = $this->physicalTable($table);
+
         return array_map(
             'strval',
             array_column(Db::query('SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?', [$table]), 'COLUMN_NAME')
@@ -733,6 +737,8 @@ class CodeGeneratorService
      */
     private function existingIndexes(string $table): array
     {
+        $table = $this->physicalTable($table);
+
         return array_map(
             'strval',
             array_column(Db::query('SELECT DISTINCT INDEX_NAME FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?', [$table]), 'INDEX_NAME')
@@ -955,9 +961,56 @@ class CodeGeneratorService
      */
     private function tableExists(string $table): bool
     {
+        $table = $this->physicalTable($table);
         $rows = Db::query('SELECT COUNT(*) AS total FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?', [$table]);
 
         return (int) ($rows[0]['total'] ?? 0) > 0;
+    }
+
+    /**
+     * 获取当前数据库表前缀。
+     */
+    private function tablePrefix(): string
+    {
+        $connection = (string) config('database.default', 'mysql');
+        $config = (array) config('database.connections.' . $connection, []);
+
+        return (string) ($config['prefix'] ?? '');
+    }
+
+    /**
+     * 将逻辑表名转换成数据库真实表名。
+     */
+    private function physicalTable(string $table): string
+    {
+        $table = str_replace('`', '', $table);
+        $prefix = $this->tablePrefix();
+
+        if ($prefix === '' || str_starts_with($table, $prefix)) {
+            return $table;
+        }
+
+        return $prefix . $table;
+    }
+
+    /**
+     * 删除逻辑表名对应的真实数据表。
+     */
+    private function dropTable(string $table): void
+    {
+        Db::execute('DROP TABLE IF EXISTS `' . $this->physicalTable($table) . '`');
+    }
+
+    /**
+     * 给生成器输出的原生 SQL 补齐数据库表前缀。
+     */
+    private function applyTablePrefixToSql(string $sql): string
+    {
+        return preg_replace_callback(
+            '/\b(CREATE\s+TABLE(?:\s+IF\s+NOT\s+EXISTS)?|DROP\s+TABLE\s+IF\s+EXISTS|INSERT\s+INTO|ALTER\s+TABLE)\s+`([a-zA-Z0-9_]+)`/i',
+            fn (array $matches) => $matches[1] . ' `' . $this->physicalTable($matches[2]) . '`',
+            $sql
+        ) ?? $sql;
     }
 
     /**
