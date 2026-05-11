@@ -1,0 +1,30 @@
+# Local environment
+.env
+.env.local
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+/.settings/
+/.buildpath
+/.project
+
+# PHP
+/vendor/
+composer.phar
+
+# Frontend
+/admin-web/node_modules/
+/admin-web/dist/
+
+# Runtime files
+/runtime/*
+!/runtime/.gitkeep
+/public/runtime/
+/public/storage/uploads/
+
+# Logs and temp files
+*.log
+*.tmp

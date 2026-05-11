@@ -1,0 +1,156 @@
+:root {
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  color: var(--el-text-color-primary);
+  background: var(--el-bg-color-page);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  --primary-color: #409eff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+body.project-gray {
+  filter: grayscale(1);
+}
+
+body.project-weak {
+  filter: invert(0.8);
+}
+
+body.project-gray.project-weak {
+  filter: grayscale(1) invert(0.8);
+}
+
+#app {
+  min-height: 100vh;
+}
+
+#top-progress {
+  position: fixed;
+  z-index: 9999;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  pointer-events: none;
+  background: var(--el-color-primary);
+  opacity: 0;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.el-card {
+  border-radius: 4px;
+}
+
+.el-card__header {
+  padding: 14px 18px;
+  color: var(--el-text-color-primary);
+  font-weight: 600;
+}
+
+.el-button {
+  border-radius: 4px;
+}
+
+.page-card {
+  border-radius: 4px;
+}
+
+.table-page-card,
+.table-page-card > .el-card__body {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.table-page-card > .el-card__body {
+  flex: 1;
+}
+
+.table-scroll {
+  flex: 1;
+  min-height: 0;
+}
+
+.table-scroll > .el-table {
+  height: 100%;
+}
+
+.page-card > .el-card__header,
+.page-search,
+.page-pagination {
+  flex: 0 0 auto;
+}
+
+.page-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.page-title {
+  color: var(--el-text-color-primary);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.page-search {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 12px;
+}
+
+.page-search.el-form--inline .el-form-item {
+  margin-right: 0;
+  margin-bottom: 0;
+}
+
+.page-pagination {
+  margin-top: 16px;
+  justify-content: flex-end;
+}
+
+.table-actions {
+  display: inline-flex;
+  align-items: center;
+}
+
+html.dark,
+body.project-dark {
+  background: var(--el-bg-color-page);
+  color: var(--el-text-color-primary);
+}
+
+body.project-compact .el-card__body {
+  padding: 14px;
+}
+
+body.project-compact .el-form-item {
+  margin-bottom: 12px;
+}
