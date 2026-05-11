@@ -7,18 +7,10 @@ use app\common\base\IndexBase;
 class Index extends IndexBase
 {
     /**
-     * 渲染前台首页。
+     * 前台首页默认响应。
      */
     public function index()
     {
-        return view();
-    }
-
-    /**
-     * ThinkPHP 默认示例接口。
-     */
-    public function hello($name = 'ThinkPHP8')
-    {
-        return 'hello,' . $name;
+        return 'VTP';
     }
 }
