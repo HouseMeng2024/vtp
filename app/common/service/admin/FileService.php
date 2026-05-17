@@ -3,8 +3,8 @@ declare (strict_types = 1);
 
 namespace app\common\service\admin;
 
-use app\common\model\SystemConfig;
 use app\common\model\UploadFile;
+use app\common\support\ConfigValue;
 use RuntimeException;
 use think\facade\Filesystem;
 use think\file\UploadedFile;
@@ -196,7 +196,7 @@ class FileService
      */
     private function allowedExtensions(): array
     {
-        $value = $this->configValue('upload_ext', 'jpg,jpeg,png,gif,pdf,doc,docx,xls,xlsx');
+        $value = (string) ConfigValue::getInGroups('upload_ext', ['system'], 'jpg,jpeg,png,gif,pdf,doc,docx,xls,xlsx');
 
         return array_values(array_filter(array_map(
             fn (string $extension) => strtolower(trim($extension)),
@@ -209,17 +209,7 @@ class FileService
      */
     private function maxSizeMb(): int
     {
-        return max(1, (int) $this->configValue('upload_max_size', '10'));
-    }
-
-    /**
-     * 获取系统配置值。
-     */
-    private function configValue(string $key, string $default = ''): string
-    {
-        $value = SystemConfig::where('key', $key)->value('value');
-
-        return $value === null ? $default : (string) $value;
+        return max(1, (int) ConfigValue::getInGroups('upload_max_size', ['system'], 10));
     }
 
     /**

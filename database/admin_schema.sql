@@ -164,18 +164,63 @@ CREATE TABLE `vtp_admin_notice_read` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='后台消息已读记录';
 
 DROP TABLE IF EXISTS `vtp_system_config`;
+DROP TABLE IF EXISTS `vtp_system_config_tab`;
+DROP TABLE IF EXISTS `vtp_system_config_group`;
+CREATE TABLE `vtp_system_config_group` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `key` varchar(50) NOT NULL COMMENT '分组标识',
+  `title` varchar(100) NOT NULL DEFAULT '' COMMENT '分组名称',
+  `sort` int NOT NULL DEFAULT '100' COMMENT '排序',
+  `is_system` tinyint unsigned NOT NULL DEFAULT '0' COMMENT '系统内置：1是 0否',
+  `status` tinyint unsigned NOT NULL DEFAULT '1' COMMENT '状态：1启用 0禁用',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_group_key` (`group_id`, `key`),
+  KEY `idx_sort` (`sort`),
+  KEY `idx_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='系统配置分组';
+
+CREATE TABLE `vtp_system_config_tab` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `group_id` bigint unsigned NOT NULL COMMENT '配置分组ID',
+  `key` varchar(50) NOT NULL COMMENT '标签标识',
+  `title` varchar(100) NOT NULL DEFAULT '' COMMENT '标签名称',
+  `sort` int NOT NULL DEFAULT '100' COMMENT '排序',
+  `is_system` tinyint unsigned NOT NULL DEFAULT '0' COMMENT '系统内置：1是 0否',
+  `status` tinyint unsigned NOT NULL DEFAULT '1' COMMENT '状态：1启用 0禁用',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_group_key` (`group_id`, `key`),
+  KEY `idx_group_id` (`group_id`),
+  KEY `idx_sort` (`sort`),
+  KEY `idx_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='系统配置标签页';
+
 CREATE TABLE `vtp_system_config` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
-  `group` varchar(50) NOT NULL DEFAULT 'default' COMMENT '配置分组',
+  `group_id` bigint unsigned NOT NULL DEFAULT '0' COMMENT '配置分组ID',
+  `tab_id` bigint unsigned NOT NULL DEFAULT '0' COMMENT '配置标签ID',
+  `group` varchar(50) NOT NULL DEFAULT 'default' COMMENT '兼容配置分组',
   `key` varchar(100) NOT NULL COMMENT '配置键',
   `value` text COMMENT '配置值',
   `type` varchar(20) NOT NULL DEFAULT 'text' COMMENT '类型',
   `name` varchar(100) NOT NULL DEFAULT '' COMMENT '配置名称',
   `remark` varchar(255) NOT NULL DEFAULT '' COMMENT '备注',
+  `options` text COMMENT '选项配置',
+  `sort` int NOT NULL DEFAULT '100' COMMENT '排序',
+  `is_system` tinyint unsigned NOT NULL DEFAULT '0' COMMENT '系统内置：1是 0否',
+  `status` tinyint unsigned NOT NULL DEFAULT '1' COMMENT '状态：1启用 0禁用',
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_group_key` (`group`, `key`)
+  UNIQUE KEY `uk_group_key` (`group_id`, `key`),
+  KEY `idx_group_id` (`group_id`),
+  KEY `idx_tab_id` (`tab_id`),
+  KEY `idx_group_key` (`group`, `key`),
+  KEY `idx_sort` (`sort`),
+  KEY `idx_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='系统配置';
 
 DROP TABLE IF EXISTS `vtp_upload_file`;
@@ -271,7 +316,7 @@ CREATE TABLE `vtp_dict_data` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='字典数据';
 
 INSERT INTO `vtp_admin_user` (`id`, `username`, `password`, `nickname`, `status`, `create_time`, `update_time`) VALUES
-(1, 'admin', '$2y$12$b8EX2nGi7gpIKwRra/RJjOGi4nUBCQv1NVgEa4.SAsoXRtcBRddlm', '超级管理员', 1, NOW(), NOW());
+(1, 'admin', '$2y$12$FUyMIXrNAocLiLyVw1bWO.uTFnCan1dcOKyfNzFCsdlZ63tpFfSaK', '超级管理员', 1, NOW(), NOW());
 
 INSERT INTO `vtp_admin_role` (`id`, `name`, `code`, `sort`, `status`, `data_scope`, `remark`, `create_time`, `update_time`) VALUES
 (1, '超级管理员', 'super_admin', 1, 1, 'all', '拥有全部权限', NOW(), NOW());
@@ -279,21 +324,36 @@ INSERT INTO `vtp_admin_role` (`id`, `name`, `code`, `sort`, `status`, `data_scop
 INSERT INTO `vtp_admin_user_role` (`user_id`, `role_id`, `create_time`) VALUES
 (1, 1, NOW());
 
-INSERT INTO `vtp_system_config` (`group`, `key`, `value`, `type`, `name`, `remark`, `create_time`, `update_time`) VALUES
-('basic', 'site_name', 'VTP Admin', 'text', '站点名称', '后台和项目默认显示名称', NOW(), NOW()),
-('basic', 'admin_title', 'VTP Admin', 'text', '后台标题', '后台浏览器标题和顶部品牌名称', NOW(), NOW()),
-('basic', 'site_logo', '', 'image', '站点 Logo', '填写图片 URL，用于后台品牌展示', NOW(), NOW()),
-('basic', 'site_description', '通用后台管理系统', 'textarea', '站点描述', '用于项目说明、SEO 或接口展示', NOW(), NOW()),
-('basic', 'site_keywords', '', 'text', '站点关键词', '多个关键词用英文逗号分隔', NOW(), NOW()),
-('basic', 'site_icp', '', 'text', 'ICP备案号', '需要展示备案信息时填写', NOW(), NOW()),
-('upload', 'upload_disk', 'local', 'text', '上传磁盘', '默认 local，后续可扩展 oss、cos 等', NOW(), NOW()),
-('upload', 'upload_max_size', '10', 'number', '上传大小限制', '单位 MB', NOW(), NOW()),
-('upload', 'upload_ext', 'jpg,jpeg,png,gif,pdf,doc,docx,xls,xlsx', 'text', '允许扩展名', '多个扩展名用英文逗号分隔', NOW(), NOW()),
-('security', 'password_min_length', '6', 'number', '密码最小长度', '管理员密码最小长度', NOW(), NOW()),
-('security', 'admin_token_expire', '86400', 'number', '后台登录有效期', '单位秒', NOW(), NOW()),
-('security', 'login_captcha_enabled', '0', 'switch', '登录验证码', '开启后后台登录需要输入验证码', NOW(), NOW()),
-('security', 'login_max_attempts', '5', 'number', '登录失败次数', '达到次数后临时锁定', NOW(), NOW()),
-('security', 'login_lock_seconds', '900', 'number', '登录锁定时长', '单位秒', NOW(), NOW());
+INSERT INTO `vtp_system_config_group` (`id`, `key`, `title`, `sort`, `is_system`, `status`, `create_time`, `update_time`) VALUES
+(1, 'system', '系统配置', 100, 1, 1, NOW(), NOW()),
+(2, 'admin', '后台配置', 200, 1, 1, NOW(), NOW()),
+(3, 'index', '前台配置', 300, 1, 1, NOW(), NOW());
+
+INSERT INTO `vtp_system_config_tab` (`id`, `group_id`, `key`, `title`, `sort`, `is_system`, `status`, `create_time`, `update_time`) VALUES
+(1, 1, 'system_basic', '基础规范', 100, 1, 1, NOW(), NOW()),
+(2, 1, 'system_upload', '上传规范', 200, 1, 1, NOW(), NOW()),
+(3, 1, 'system_security', '安全规范', 300, 1, 1, NOW(), NOW()),
+(4, 2, 'admin_basic', '后台基础', 100, 1, 1, NOW(), NOW()),
+(5, 2, 'admin_login', '登录安全', 200, 1, 1, NOW(), NOW()),
+(6, 3, 'index_site', '网站信息', 100, 1, 1, NOW(), NOW()),
+(7, 3, 'index_seo', 'SEO 配置', 200, 1, 1, NOW(), NOW());
+
+INSERT INTO `vtp_system_config` (`id`, `group_id`, `tab_id`, `group`, `key`, `value`, `type`, `name`, `remark`, `options`, `sort`, `is_system`, `status`, `create_time`, `update_time`) VALUES
+(1, 1, 2, 'system_upload', 'upload_max_size', '10', 'number', '上传大小限制', '单位 MB，所有模块上传默认遵守', '', 100, 1, 1, NOW(), NOW()),
+(2, 1, 2, 'system_upload', 'upload_ext', 'jpg,jpeg,png,gif,webp,pdf,doc,docx,xls,xlsx,zip', 'text', '允许扩展名', '多个扩展名用英文逗号分隔', '', 101, 1, 1, NOW(), NOW()),
+(3, 1, 3, 'system_security', 'password_min_length', '6', 'number', '密码最小长度', '系统账号类密码最小长度', '', 100, 1, 1, NOW(), NOW()),
+(4, 1, 3, 'system_security', 'login_max_attempts', '5', 'number', '登录失败次数', '达到次数后临时锁定', '', 101, 1, 1, NOW(), NOW()),
+(5, 1, 3, 'system_security', 'login_lock_seconds', '900', 'number', '登录锁定时长', '单位秒', '', 102, 1, 1, NOW(), NOW()),
+(6, 2, 4, 'admin_basic', 'title', 'VTP Admin', 'text', '后台标题', '后台浏览器标题和顶部品牌名称', '', 100, 1, 1, NOW(), NOW()),
+(7, 2, 4, 'admin_basic', 'logo', '', 'image', '后台 Logo', '后台登录页和顶部品牌 Logo', '', 101, 1, 1, NOW(), NOW()),
+(8, 2, 4, 'admin_basic', 'description', '通用后台管理系统', 'textarea', '后台描述', '后台登录页展示说明', '', 102, 1, 1, NOW(), NOW()),
+(9, 2, 5, 'admin_login', 'token_expire', '86400', 'number', '后台登录有效期', '单位秒，仅作用于 admin 模块', '', 100, 1, 1, NOW(), NOW()),
+(10, 2, 5, 'admin_login', 'captcha_enabled', '0', 'switch', '后台登录验证码', '开启后后台登录需要输入验证码', '', 101, 1, 1, NOW(), NOW()),
+(11, 3, 6, 'index_site', 'title', 'VTP', 'text', '网站标题', '前台 index 模块默认网站标题', '', 100, 1, 1, NOW(), NOW()),
+(12, 3, 6, 'index_site', 'logo', '', 'image', '网站 Logo', '前台站点 Logo', '', 101, 1, 1, NOW(), NOW()),
+(13, 3, 7, 'index_seo', 'seo_title', 'VTP', 'text', 'SEO 标题', '前台默认 SEO 标题', '', 100, 1, 1, NOW(), NOW()),
+(14, 3, 7, 'index_seo', 'seo_keywords', '', 'text', 'SEO 关键词', '多个关键词用英文逗号分隔', '', 101, 1, 1, NOW(), NOW()),
+(15, 3, 7, 'index_seo', 'seo_description', '', 'textarea', 'SEO 描述', '前台页面默认 SEO 描述', '', 102, 1, 1, NOW(), NOW());
 
 INSERT INTO `vtp_dict_type` (`id`, `name`, `type`, `sort`, `status`, `remark`, `create_time`, `update_time`) VALUES
 (1, '通用状态', 'common_status', 1, 1, '通用启用禁用状态', NOW(), NOW()),
@@ -306,7 +366,7 @@ INSERT INTO `vtp_dict_data` (`type_id`, `label`, `value`, `tag_type`, `sort`, `s
 (2, '关闭', '0', 'info', 2, 1, '', NOW(), NOW());
 
 INSERT INTO `vtp_admin_menu` (`id`, `parent_id`, `type`, `title`, `permission`, `path`, `component`, `icon`, `sort`, `visible`, `status`, `create_time`, `update_time`) VALUES
-(1, 0, 1, '系统管理', '', '/system', '', 'Setting', 400, 1, 1, NOW(), NOW()),
+(1, 0, 1, '系统设置', '', '/system', '', 'Setting', 400, 1, 1, NOW(), NOW()),
 (2, 48, 2, '管理员管理', 'admin:user:list', '/permission/users', 'system/user/index', 'User', 100, 1, 1, NOW(), NOW()),
 (3, 2, 3, '新增管理员', 'admin:user:create', '', '', '', 100, 0, 1, NOW(), NOW()),
 (4, 2, 3, '编辑管理员', 'admin:user:update', '', '', '', 101, 0, 1, NOW(), NOW()),
@@ -324,6 +384,10 @@ INSERT INTO `vtp_admin_menu` (`id`, `parent_id`, `type`, `title`, `permission`, 
 (16, 7, 3, '删除菜单', 'admin:menu:delete', '', '', '', 102, 0, 1, NOW(), NOW()),
 (17, 1, 2, '项目配置', 'admin:config:list', '/system/config', 'system/config/index', 'Tools', 100, 1, 1, NOW(), NOW()),
 (18, 17, 3, '保存项目配置', 'admin:config:update', '', '', '', 100, 0, 1, NOW(), NOW()),
+(57, 1, 2, '配置管理', 'admin:config-manage:list', '/system/config-manage', 'system/config-manage/index', 'Operation', 106, 1, 1, NOW(), NOW()),
+(58, 57, 3, '新增配置结构', 'admin:config-manage:create', '', '', '', 100, 0, 1, NOW(), NOW()),
+(59, 57, 3, '编辑配置结构', 'admin:config-manage:update', '', '', '', 101, 0, 1, NOW(), NOW()),
+(60, 57, 3, '删除配置结构', 'admin:config-manage:delete', '', '', '', 102, 0, 1, NOW(), NOW()),
 (19, 1, 2, '文件管理', 'admin:file:list', '/system/files', 'system/file/index', 'FolderOpened', 103, 1, 1, NOW(), NOW()),
 (20, 19, 3, '上传文件', 'admin:file:upload', '', '', '', 100, 0, 1, NOW(), NOW()),
 (21, 19, 3, '删除文件', 'admin:file:delete', '', '', '', 101, 0, 1, NOW(), NOW()),

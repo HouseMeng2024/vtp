@@ -38,4 +38,112 @@ class Config extends AdminBase
             return ApiResponse::fail($exception->getMessage());
         }
     }
+
+    /**
+     * 新增配置分组。
+     */
+    public function createGroup(): Response
+    {
+        try {
+            return ApiResponse::success((new ConfigService())->createGroup($this->request->post()));
+        } catch (RuntimeException $exception) {
+            return ApiResponse::fail($exception->getMessage());
+        }
+    }
+
+    /**
+     * 更新配置分组。
+     */
+    public function updateGroup(): Response
+    {
+        try {
+            return ApiResponse::success((new ConfigService())->updateGroup((int) $this->request->param('id'), $this->request->put()));
+        } catch (RuntimeException $exception) {
+            return ApiResponse::fail($exception->getMessage());
+        }
+    }
+
+    /**
+     * 删除配置分组。
+     */
+    public function deleteGroup(): Response
+    {
+        try {
+            return ApiResponse::success((new ConfigService())->deleteGroup((int) $this->request->param('id')));
+        } catch (RuntimeException $exception) {
+            return ApiResponse::fail($exception->getMessage());
+        }
+    }
+
+    /**
+     * 新增配置标签页。
+     */
+    public function createTab(): Response
+    {
+        try {
+            return ApiResponse::success((new ConfigService())->createTab($this->request->post()));
+        } catch (RuntimeException $exception) {
+            return ApiResponse::fail($exception->getMessage());
+        }
+    }
+
+    /**
+     * 更新配置标签页。
+     */
+    public function updateTab(): Response
+    {
+        try {
+            return ApiResponse::success((new ConfigService())->updateTab((int) $this->request->param('id'), $this->request->put()));
+        } catch (RuntimeException $exception) {
+            return ApiResponse::fail($exception->getMessage());
+        }
+    }
+
+    /**
+     * 删除配置标签页。
+     */
+    public function deleteTab(): Response
+    {
+        try {
+            return ApiResponse::success((new ConfigService())->deleteTab((int) $this->request->param('id')));
+        } catch (RuntimeException $exception) {
+            return ApiResponse::fail($exception->getMessage());
+        }
+    }
+
+    /**
+     * 新增配置项。
+     */
+    public function createItem(): Response
+    {
+        try {
+            return ApiResponse::success((new ConfigService())->createItem($this->request->post()));
+        } catch (RuntimeException $exception) {
+            return ApiResponse::fail($exception->getMessage());
+        }
+    }
+
+    /**
+     * 更新配置项。
+     */
+    public function updateItem(): Response
+    {
+        try {
+            return ApiResponse::success((new ConfigService())->updateItem((int) $this->request->param('id'), $this->request->put()));
+        } catch (RuntimeException $exception) {
+            return ApiResponse::fail($exception->getMessage());
+        }
+    }
+
+    /**
+     * 删除配置项。
+     */
+    public function deleteItem(): Response
+    {
+        try {
+            return ApiResponse::success((new ConfigService())->deleteItem((int) $this->request->param('id')));
+        } catch (RuntimeException $exception) {
+            return ApiResponse::fail($exception->getMessage());
+        }
+    }
 }

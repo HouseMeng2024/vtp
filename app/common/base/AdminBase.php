@@ -4,9 +4,20 @@ declare (strict_types = 1);
 namespace app\common\base;
 
 use app\BaseController;
+use app\common\support\ConfigValue;
 
 class AdminBase extends BaseController
 {
+    /**
+     * 初始化后台控制器。
+     */
+    protected function initialize()
+    {
+        parent::initialize();
+        ConfigValue::loadGroupsToConfig('system', ['system']);
+        ConfigValue::loadGroupsToConfig('admin', ['admin']);
+    }
+
     /**
      * 获取当前登录管理员上下文。
      */

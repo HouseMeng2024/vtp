@@ -33,6 +33,7 @@ const componentOptions = [
   'system/role/index',
   'system/menu/index',
   'system/config/index',
+  'system/config-manage/index',
   'system/file/index',
   'system/dict/index',
   'system/tool/index',

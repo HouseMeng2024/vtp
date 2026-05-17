@@ -28,3 +28,6 @@ composer.phar
 # Logs and temp files
 *.log
 *.tmp
+
+# Local scripts
+tp-server.sh

@@ -7,7 +7,7 @@ use app\common\model\admin\AdminLoginLog;
 use app\common\model\admin\AdminMenu;
 use app\common\model\admin\AdminRole;
 use app\common\model\admin\AdminUser;
-use app\common\model\SystemConfig;
+use app\common\support\ConfigValue;
 use RuntimeException;
 use think\facade\Cache;
 use think\file\UploadedFile;
@@ -241,9 +241,7 @@ class AuthService
      */
     private function passwordMinLength(): int
     {
-        $value = SystemConfig::where('key', 'password_min_length')->value('value');
-
-        return max(6, (int) ($value ?: 6));
+        return max(6, (int) ConfigValue::getInGroups('password_min_length', ['system'], 6));
     }
 
     /**
@@ -251,9 +249,7 @@ class AuthService
      */
     private function tokenExpire(): int
     {
-        $value = SystemConfig::where('key', 'admin_token_expire')->value('value');
-
-        return max(300, (int) ($value ?: 86400));
+        return max(300, (int) ConfigValue::getInGroups('token_expire', ['admin'], 86400));
     }
 
     /**
@@ -261,9 +257,7 @@ class AuthService
      */
     private function loginMaxAttempts(): int
     {
-        $value = SystemConfig::where('key', 'login_max_attempts')->value('value');
-
-        return max(1, (int) ($value ?: 5));
+        return max(1, (int) ConfigValue::getInGroups('login_max_attempts', ['system'], 5));
     }
 
     /**
@@ -271,9 +265,7 @@ class AuthService
      */
     private function loginLockSeconds(): int
     {
-        $value = SystemConfig::where('key', 'login_lock_seconds')->value('value');
-
-        return max(60, (int) ($value ?: 900));
+        return max(60, (int) ConfigValue::getInGroups('login_lock_seconds', ['system'], 900));
     }
 
     /**
@@ -281,7 +273,9 @@ class AuthService
      */
     private function captchaEnabled(): bool
     {
-        return (string) SystemConfig::where('key', 'login_captcha_enabled')->value('value') === '1';
+        $value = ConfigValue::getInGroups('captcha_enabled', ['admin'], false);
+
+        return $value === true || $value === 1 || $value === '1';
     }
 
     /**

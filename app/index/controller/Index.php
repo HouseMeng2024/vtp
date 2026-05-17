@@ -7,10 +7,15 @@ use app\common\base\IndexBase;
 class Index extends IndexBase
 {
     /**
-     * 前台首页默认响应。
+     * 前台首页。
      */
     public function index()
     {
-        return 'VTP';
+        $config = config('index', []);
+        $config['page_title'] = ($config['seo_title'] ?? '') ?: ($config['title'] ?? 'VTP');
+
+        return view('index', [
+            'config' => $config,
+        ]);
     }
 }

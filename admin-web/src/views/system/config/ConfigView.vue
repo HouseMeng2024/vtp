@@ -1,44 +1,92 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import { fetchSystemConfigs, updateSystemConfigs, type SystemConfigGroup, type UploadFileRow } from '../../../api/system'
+import {
+  fetchSystemConfigs,
+  updateSystemConfigs,
+  type SystemConfigGroup,
+} from '../../../api/system'
 import { useAppStore } from '../../../stores/app'
 import { useAuthStore } from '../../../stores/auth'
-import FileSelector from '../../../components/FileSelector.vue'
+import ConfigValueControl from './ConfigValueControl.vue'
 
 const authStore = useAuthStore()
 const appStore = useAppStore()
 const loading = ref(false)
 const saving = ref(false)
-const activeGroup = ref('')
 const groups = ref<SystemConfigGroup[]>([])
-const form = reactive<Record<string, string | number>>({})
-const selectorVisible = ref(false)
-const selectingKey = ref('')
+const activeGroupId = ref(0)
+const activeTabId = ref('')
+const form = reactive<Record<string, string | number | Array<string | number>>>({})
 const canUpdate = computed(() => authStore.hasPermission('admin:config:update'))
-const backendOrigin = import.meta.env.DEV ? 'http://127.0.0.1:8000' : ''
+
+const activeGroup = computed(() => groups.value.find((item) => item.id === activeGroupId.value))
+const activeTab = computed(() => activeGroup.value?.tabs.find((item) => String(item.id) === activeTabId.value))
+const formKey = (id: number) => String(id)
 
 async function loadData() {
   loading.value = true
   try {
-    groups.value = await fetchSystemConfigs()
-    activeGroup.value = groups.value[0]?.group || ''
-    Object.keys(form).forEach((key) => delete form[key])
-
-    for (const group of groups.value) {
-      for (const item of group.items) {
-        form[item.key] = ['number', 'switch'].includes(item.type) ? Number(item.value || 0) : item.value || ''
-      }
-    }
+    applyGroups(await fetchSystemConfigs())
   } finally {
     loading.value = false
   }
 }
 
+function applyGroups(nextGroups: SystemConfigGroup[]) {
+  groups.value = nextGroups.filter((group) => group.status === 1)
+
+  if (!groups.value.some((item) => item.id === activeGroupId.value)) {
+    activeGroupId.value = groups.value[0]?.id || 0
+  }
+
+  const group = activeGroup.value
+  if (!group?.tabs.some((item) => String(item.id) === activeTabId.value && item.status === 1)) {
+    activeTabId.value = group?.tabs.find((item) => item.status === 1) ? String(group.tabs.find((item) => item.status === 1)?.id) : ''
+  }
+
+  Object.keys(form).forEach((key) => delete form[key])
+  for (const groupItem of groups.value) {
+    for (const tab of groupItem.tabs.filter((item) => item.status === 1)) {
+      for (const item of tab.items.filter((config) => config.status === 1)) {
+        form[formKey(item.id)] = normalizeFormValue(item.type, item.value)
+      }
+    }
+  }
+}
+
+function normalizeFormValue(type: string, rawValue: string) {
+  if (['number', 'switch', 'slider', 'rate'].includes(type)) {
+    return Number(rawValue || 0)
+  }
+
+  if (['checkbox', 'select_multiple', 'daterange', 'datetimerange', 'timerange', 'images', 'files'].includes(type)) {
+    try {
+      const parsed = JSON.parse(rawValue || '[]')
+      return Array.isArray(parsed) ? parsed : []
+    } catch {
+      return rawValue ? rawValue.split(',').map((item) => item.trim()).filter(Boolean) : []
+    }
+  }
+
+  return rawValue || ''
+}
+
 async function submitForm() {
+  if (!activeTab.value) {
+    return
+  }
+
+  const payload = activeTab.value.items
+    .filter((item) => item.status === 1)
+    .reduce<Record<string, string | number | Array<string | number>>>((result, item) => {
+      result[formKey(item.id)] = form[formKey(item.id)]
+      return result
+    }, {})
+
   saving.value = true
   try {
-    groups.value = await updateSystemConfigs(form)
+    applyGroups(await updateSystemConfigs(payload))
     await appStore.loadSiteConfig()
     ElMessage.success('保存成功')
   } finally {
@@ -46,36 +94,16 @@ async function submitForm() {
   }
 }
 
-function imageUrl(value: string | number) {
-  const url = String(value || '')
-
-  if (/^https?:\/\//i.test(url) || url.startsWith('data:')) {
-    return url
-  }
-
-  return `${backendOrigin}${url}`
-}
-
-function openImageSelector(key: string) {
-  selectingKey.value = key
-  selectorVisible.value = true
-}
-
-function handleImageSelected(files: UploadFileRow[]) {
-  const file = files[0]
-
-  if (!file || !selectingKey.value) {
-    return
-  }
-
-  form[selectingKey.value] = file.url
+function selectGroup(group: SystemConfigGroup) {
+  activeGroupId.value = group.id
+  activeTabId.value = group.tabs.find((item) => item.status === 1) ? String(group.tabs.find((item) => item.status === 1)?.id) : ''
 }
 
 onMounted(loadData)
 </script>
 
 <template>
-  <el-card class="page-card" shadow="never">
+  <el-card class="page-card config-page-card" shadow="never">
     <template #header>
       <div class="page-toolbar">
         <div class="page-title">项目配置</div>
@@ -84,67 +112,123 @@ onMounted(loadData)
     </template>
 
     <el-skeleton v-if="loading" :rows="8" animated />
-    <el-tabs v-else v-model="activeGroup">
-      <el-tab-pane v-for="group in groups" :key="group.group" :label="group.title" :name="group.group">
-        <el-form class="config-form" label-width="130px">
-          <el-form-item v-for="item in group.items" :key="item.key" :label="item.name">
-            <el-input-number
-              v-if="item.type === 'number'"
-              v-model="form[item.key] as number"
-              :min="0"
-              :disabled="!canUpdate"
-            />
-            <el-switch
-              v-else-if="item.type === 'switch'"
-              v-model="form[item.key]"
-              :active-value="1"
-              :inactive-value="0"
-              :disabled="!canUpdate"
-            />
-            <el-input
-              v-else-if="item.type === 'image'"
-              v-model="form[item.key]"
-              :disabled="!canUpdate"
-              placeholder="请输入图片 URL，或上传图片"
-            >
-              <template #append>
-                <el-button v-if="canUpdate" @click="openImageSelector(item.key)">选择</el-button>
-                <span v-else>选择</span>
-              </template>
-            </el-input>
-            <el-input
-              v-else-if="item.type === 'textarea'"
-              v-model="form[item.key]"
-              type="textarea"
-              :rows="4"
-              :disabled="!canUpdate"
-            />
-            <el-input v-else v-model="form[item.key]" :disabled="!canUpdate" />
-            <el-image
-              v-if="item.type === 'image' && form[item.key]"
-              class="config-image"
-              :src="imageUrl(form[item.key])"
-              fit="contain"
-            />
-            <div v-if="item.remark" class="config-remark">{{ item.remark }}</div>
-          </el-form-item>
-        </el-form>
-      </el-tab-pane>
-    </el-tabs>
-    <FileSelector
-      v-model="selectorVisible"
-      accept-type="image"
-      scene="setting"
-      :current-url="String(form[selectingKey] || '')"
-      @select="handleImageSelected"
-    />
+    <div v-else class="config-layout">
+      <aside class="config-groups">
+        <button
+          v-for="group in groups"
+          :key="group.id"
+          type="button"
+          class="group-item"
+          :class="{ active: group.id === activeGroupId }"
+          @click="selectGroup(group)"
+        >
+          {{ group.title }}
+        </button>
+      </aside>
+
+      <section class="config-main">
+        <el-empty v-if="!activeGroup" description="暂无配置分组" />
+        <el-tabs v-else v-model="activeTabId">
+          <el-tab-pane
+            v-for="tab in activeGroup.tabs.filter((item) => item.status === 1)"
+            :key="tab.id"
+            :label="tab.title"
+            :name="String(tab.id)"
+          >
+            <el-form class="config-form" label-width="130px">
+              <el-empty v-if="tab.items.filter((item) => item.status === 1).length === 0" description="暂无配置项" />
+              <el-form-item
+                v-for="item in tab.items.filter((config) => config.status === 1)"
+                :key="item.id"
+              >
+                <template #label>
+                  <div class="config-label">
+                    <span class="config-label-name">{{ item.name }}</span>
+                    <span class="config-label-key">{{ item.key }}</span>
+                  </div>
+                </template>
+                <div class="config-control">
+                  <ConfigValueControl v-model="form[formKey(item.id)]" :item="item" :disabled="!canUpdate" />
+                  <div v-if="item.remark" class="config-remark">{{ item.remark }}</div>
+                </div>
+              </el-form-item>
+            </el-form>
+          </el-tab-pane>
+        </el-tabs>
+      </section>
+    </div>
   </el-card>
 </template>
 
 <style scoped>
+.config-page-card {
+  height: 100%;
+}
+
+.config-layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 18px;
+  min-height: 520px;
+}
+
+.config-groups {
+  overflow: auto;
+  border-right: 1px solid var(--el-border-color-light);
+  padding-right: 12px;
+}
+
+.group-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--el-text-color-regular);
+  cursor: pointer;
+}
+
+.group-item.active {
+  background: var(--el-color-primary-light-9);
+  color: var(--el-color-primary);
+}
+
+.config-main {
+  min-width: 0;
+}
+
 .config-form {
-  max-width: 760px;
+  max-width: 820px;
   padding-top: 12px;
+}
+
+.config-control {
+  flex: 1;
+  min-width: 0;
+}
+
+.config-label {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.35;
+}
+
+.config-label-name {
+  color: var(--el-text-color-primary);
+}
+
+.config-label-key {
+  max-width: 120px;
+  overflow: hidden;
+  color: var(--el-text-color-secondary);
+  font-family: var(--el-font-family);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .config-remark {
@@ -155,13 +239,22 @@ onMounted(loadData)
   line-height: 1.5;
 }
 
-.config-image {
-  display: block;
-  width: 96px;
-  height: 96px;
-  margin-top: 10px;
-  border: 1px solid var(--el-border-color-light);
-  border-radius: 4px;
-  background: var(--el-fill-color-light);
+@media (max-width: 900px) {
+  .config-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .config-groups {
+    display: flex;
+    gap: 8px;
+    border-right: 0;
+    border-bottom: 1px solid var(--el-border-color-light);
+    padding: 0 0 12px;
+  }
+
+  .group-item {
+    width: auto;
+    min-width: 120px;
+  }
 }
 </style>
