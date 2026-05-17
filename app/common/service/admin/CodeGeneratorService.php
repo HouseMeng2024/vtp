@@ -173,7 +173,7 @@ class CodeGeneratorService
         $table = $this->normalizeName((string) ($payload['table'] ?? $module));
 
         if ($module === '') {
-            throw new RuntimeException(\think\facade\Lang::get('admin.clean_module_required'));
+            throw new RuntimeException('请输入要清理的模块标识');
         }
 
         $class = $this->studly($module);
@@ -257,11 +257,11 @@ class CodeGeneratorService
         $fields = $payload['fields'] ?? [];
 
         if ($module === '' || $title === '' || $table === '') {
-            throw new RuntimeException(\think\facade\Lang::get('admin.generator_base_required'));
+            throw new RuntimeException('模块标识、模块名称、数据表名不能为空');
         }
 
         if (!$fields || !is_array($fields)) {
-            throw new RuntimeException(\think\facade\Lang::get('admin.at_least_one_field'));
+            throw new RuntimeException('至少需要配置一个字段');
         }
 
         return [
@@ -293,15 +293,15 @@ class CodeGeneratorService
             $type = (string) ($field['type'] ?? 'text');
 
             if ($name === '' || $label === '') {
-                throw new RuntimeException(\think\facade\Lang::get('admin.field_name_title_required'));
+                throw new RuntimeException('字段名和字段标题不能为空');
             }
 
             if (in_array($name, $names, true)) {
-                throw new RuntimeException(\think\facade\Lang::get('admin.duplicate_field_name') . $name);
+                throw new RuntimeException('字段名不能重复：' . $name);
             }
 
             if (!in_array($type, self::FIELD_TYPES, true)) {
-                throw new RuntimeException(\think\facade\Lang::get('admin.unsupported_field_type') . $type);
+                throw new RuntimeException('不支持的字段类型：' . $type);
             }
 
             $names[] = $name;
@@ -322,7 +322,7 @@ class CodeGeneratorService
         }
 
         if (!$items) {
-            throw new RuntimeException(\think\facade\Lang::get('admin.at_least_one_valid_field'));
+            throw new RuntimeException('至少需要配置一个有效字段');
         }
 
         return $items;
@@ -518,17 +518,17 @@ class CodeGeneratorService
             $target = $targetRoot . DIRECTORY_SEPARATOR . $relative;
 
             if (is_file($target) && !$overwrite) {
-                throw new RuntimeException(\think\facade\Lang::get('admin.target_file_exists') . $target);
+                throw new RuntimeException('目标文件已存在，请勾选覆盖同名文件：' . $target);
             }
 
             $dir = dirname($target);
 
             if (!is_dir($dir) && !mkdir($dir, 0755, true) && !is_dir($dir)) {
-                throw new RuntimeException(\think\facade\Lang::get('admin.create_dir_failed') . $dir);
+                throw new RuntimeException('目录创建失败：' . $dir);
             }
 
             if (!copy($file->getPathname(), $target)) {
-                throw new RuntimeException(\think\facade\Lang::get('admin.write_file_failed') . $target);
+                throw new RuntimeException('文件写入失败：' . $target);
             }
 
             $files[] = $target;
@@ -555,7 +555,7 @@ class CodeGeneratorService
         $snippetPath = $outputDir . '/snippets/api.ts';
 
         if (!is_file($snippetPath)) {
-            throw new RuntimeException(\think\facade\Lang::get('admin.frontend_api_snippet_not_found') . $snippetPath);
+            throw new RuntimeException('前端 API 片段不存在：' . $snippetPath);
         }
 
         $snippet = trim((string) file_get_contents($snippetPath));
@@ -565,7 +565,7 @@ class CodeGeneratorService
         }
 
         if (is_file($target) && !$overwrite) {
-            throw new RuntimeException(\think\facade\Lang::get('admin.frontend_api_exists') . $target);
+            throw new RuntimeException('前端 API 文件已存在，请勾选覆盖同名文件：' . $target);
         }
 
         file_put_contents($target, $snippet . "\n");
@@ -837,14 +837,14 @@ class CodeGeneratorService
         $dir = $this->projectPath('runtime/generator/config');
 
         if (!is_dir($dir) && !mkdir($dir, 0755, true) && !is_dir($dir)) {
-            throw new RuntimeException(\think\facade\Lang::get('admin.create_generator_config_dir_failed'));
+            throw new RuntimeException('生成配置目录创建失败');
         }
 
         $path = $dir . DIRECTORY_SEPARATOR . $config['module'] . '.php';
         $content = "<?php\n\nreturn " . var_export($config, true) . ";\n";
 
         if (file_put_contents($path, $content) === false) {
-            throw new RuntimeException(\think\facade\Lang::get('admin.write_generator_config_failed'));
+            throw new RuntimeException('生成配置写入失败');
         }
 
         return $path;
@@ -886,7 +886,7 @@ class CodeGeneratorService
         exec($command, $output, $code);
 
         if ($code !== 0) {
-            throw new RuntimeException(\think\facade\Lang::get('admin.code_generation_failed') . implode("\n", $output));
+            throw new RuntimeException('代码生成失败：' . implode("\n", $output));
         }
 
         return $output;

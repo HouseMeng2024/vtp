@@ -1,7 +1,6 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import type { ApiResponse } from '../types/auth'
-import { getStoredLocale, t } from '../plugins/i18n'
 import { finishProgress, startProgress } from './progress'
 
 const request = axios.create({
@@ -17,8 +16,6 @@ request.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${token}`
   }
 
-  config.headers['think-lang'] = getStoredLocale()
-
   return config
 })
 
@@ -31,16 +28,16 @@ request.interceptors.response.use(
       if (result.code === 401) {
         localStorage.removeItem('admin_token')
         location.href = `/login?redirect=${encodeURIComponent(location.pathname + location.search)}`
-        return Promise.reject(new Error(result.message || t('error.unauthorized')))
+        return Promise.reject(new Error(result.message || '请先登录'))
       }
 
       if (result.code === 403) {
         location.href = '/403'
-        return Promise.reject(new Error(result.message || t('error.forbidden')))
+        return Promise.reject(new Error(result.message || '无权限访问'))
       }
 
-      ElMessage.error(result.message || t('error.requestFailed'))
-      return Promise.reject(new Error(result.message || t('error.requestFailed')))
+      ElMessage.error(result.message || '请求失败')
+      return Promise.reject(new Error(result.message || '请求失败'))
     }
 
     response.data = result.data
@@ -59,7 +56,7 @@ request.interceptors.response.use(
       return Promise.reject(error)
     }
 
-    ElMessage.error(error?.response?.data?.message || error.message || t('error.requestFailed'))
+    ElMessage.error(error?.response?.data?.message || error.message || '请求失败')
     return Promise.reject(error)
   },
 )

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import {
   createSystemConfigGroup,
@@ -21,7 +20,6 @@ import { useAuthStore } from '../../../stores/auth'
 import ConfigValueControl from '../config/ConfigValueControl.vue'
 
 const authStore = useAuthStore()
-const { t } = useI18n()
 const loading = ref(false)
 const groups = ref<SystemConfigGroup[]>([])
 const groupManageVisible = ref(false)
@@ -45,28 +43,28 @@ const canCreate = computed(() => authStore.hasPermission('admin:config-manage:cr
 const canUpdate = computed(() => authStore.hasPermission('admin:config-manage:update'))
 const canDelete = computed(() => authStore.hasPermission('admin:config-manage:delete'))
 const typeOptions = [
-  { label: 'Text', value: 'text' },
-  { label: 'Password', value: 'password' },
-  { label: 'Textarea', value: 'textarea' },
-  { label: 'Number', value: 'number' },
-  { label: 'Switch', value: 'switch' },
-  { label: 'Radio', value: 'radio' },
-  { label: 'Checkbox', value: 'checkbox' },
-  { label: 'Select', value: 'select' },
-  { label: 'Multiple Select', value: 'select_multiple' },
-  { label: 'Color Picker', value: 'color' },
-  { label: 'Date', value: 'date' },
-  { label: 'Date Range', value: 'daterange' },
-  { label: 'Datetime', value: 'datetime' },
-  { label: 'Datetime Range', value: 'datetimerange' },
-  { label: 'Time', value: 'time' },
-  { label: 'Time Range', value: 'timerange' },
-  { label: 'Slider', value: 'slider' },
-  { label: 'Rate', value: 'rate' },
-  { label: 'Image', value: 'image' },
-  { label: 'Multiple Images', value: 'images' },
-  { label: 'File', value: 'file' },
-  { label: 'Multiple Files', value: 'files' },
+  { label: '文本', value: 'text' },
+  { label: '密码', value: 'password' },
+  { label: '多行文本', value: 'textarea' },
+  { label: '数字', value: 'number' },
+  { label: '开关', value: 'switch' },
+  { label: '单选框', value: 'radio' },
+  { label: '多选框', value: 'checkbox' },
+  { label: '下拉选择', value: 'select' },
+  { label: '多选下拉', value: 'select_multiple' },
+  { label: '颜色选择', value: 'color' },
+  { label: '日期', value: 'date' },
+  { label: '日期范围', value: 'daterange' },
+  { label: '日期时间', value: 'datetime' },
+  { label: '日期时间范围', value: 'datetimerange' },
+  { label: '时间', value: 'time' },
+  { label: '时间范围', value: 'timerange' },
+  { label: '滑块', value: 'slider' },
+  { label: '评分', value: 'rate' },
+  { label: '图片', value: 'image' },
+  { label: '多图', value: 'images' },
+  { label: '文件', value: 'file' },
+  { label: '多文件', value: 'files' },
 ]
 const optionTypes = ['radio', 'checkbox', 'select', 'select_multiple']
 
@@ -94,21 +92,21 @@ const itemForm = reactive({
   sort: 100,
   status: 1,
 })
-const groupRules = computed<FormRules>(() => ({
-  key: [{ required: true, message: t('configManage.groupKeyRequired'), trigger: 'blur' }],
-  title: [{ required: true, message: t('configManage.groupNameRequired'), trigger: 'blur' }],
-}))
-const tabRules = computed<FormRules>(() => ({
-  group_id: [{ required: true, message: t('configManage.groupRequired'), trigger: 'change' }],
-  key: [{ required: true, message: t('configManage.tabKeyRequired'), trigger: 'blur' }],
-  title: [{ required: true, message: t('configManage.tabNameRequired'), trigger: 'blur' }],
-}))
-const itemRules = computed<FormRules>(() => ({
-  tab_id: [{ required: true, message: t('configManage.configTabRequired'), trigger: 'change' }],
-  key: [{ required: true, message: t('configManage.itemKeyRequired'), trigger: 'blur' }],
-  name: [{ required: true, message: t('configManage.itemNameRequired'), trigger: 'blur' }],
-  type: [{ required: true, message: t('configManage.configTypeRequired'), trigger: 'change' }],
-}))
+const groupRules: FormRules = {
+  key: [{ required: true, message: '请输入分组标识', trigger: 'blur' }],
+  title: [{ required: true, message: '请输入分组名称', trigger: 'blur' }],
+}
+const tabRules: FormRules = {
+  group_id: [{ required: true, message: '请选择配置分组', trigger: 'change' }],
+  key: [{ required: true, message: '请输入 Tab 标识', trigger: 'blur' }],
+  title: [{ required: true, message: '请输入 Tab 名称', trigger: 'blur' }],
+}
+const itemRules: FormRules = {
+  tab_id: [{ required: true, message: '请选择配置 Tab', trigger: 'change' }],
+  key: [{ required: true, message: '请输入配置键', trigger: 'blur' }],
+  name: [{ required: true, message: '请输入配置名称', trigger: 'blur' }],
+  type: [{ required: true, message: '请选择配置类型', trigger: 'change' }],
+}
 
 const allTabs = computed(() => groups.value.flatMap((group) => group.tabs.map((tab) => ({
   ...tab,
@@ -150,7 +148,7 @@ const defaultValueItem = computed<SystemConfigItem>(() => ({
   key: itemForm.key || 'default_value',
   value: Array.isArray(itemForm.value) ? JSON.stringify(itemForm.value) : String(itemForm.value ?? ''),
   type: itemForm.type,
-  name: itemForm.name || 'Default Value',
+  name: itemForm.name || '默认值',
   remark: '',
   options: optionTypes.includes(itemForm.type) ? stringifyOptions() : itemForm.options,
   sort: itemForm.sort,
@@ -199,7 +197,7 @@ function parseOptions(raw: string) {
       }))
     }
   } catch {
-    // Supports legacy value,label rows.
+    // 兼容旧的每行 value,label 写法。
   }
 
   return raw
@@ -249,18 +247,18 @@ function validateOptions() {
     .filter((item) => item.value || item.label)
 
   if (rows.length === 0) {
-    ElMessage.warning(t('configManage.optionRequired'))
+    ElMessage.warning('请至少添加一个选项')
     return false
   }
 
   if (rows.some((item) => !item.value || !item.label)) {
-    ElMessage.warning(t('configManage.optionValueRequired'))
+    ElMessage.warning('选项值和选项名称都不能为空')
     return false
   }
 
   const values = rows.map((item) => item.value)
   if (new Set(values).size !== values.length) {
-    ElMessage.warning(t('configManage.optionValueUnique'))
+    ElMessage.warning('选项值不能重复')
     return false
   }
 
@@ -300,15 +298,15 @@ async function submitGroup() {
     : await createSystemConfigGroup(groupForm)
   applyGroups(nextGroups)
   groupDialogVisible.value = false
-  ElMessage.success(t('configManage.saved'))
+  ElMessage.success('保存成功')
 }
 
 async function handleDeleteGroup(group: SystemConfigGroup) {
-  await ElMessageBox.confirm(t('configManage.deleteGroupConfirm', { name: group.title }), t('common.deleteConfirmation'), {
+  await ElMessageBox.confirm(`确定删除配置分组「${group.title}」吗？分组下的自定义标签和配置项也会删除。`, '删除确认', {
     type: 'warning',
   })
   applyGroups(await deleteSystemConfigGroup(group.id))
-  ElMessage.success(t('configManage.deleted'))
+  ElMessage.success('删除成功')
 }
 
 function openCreateTab() {
@@ -344,22 +342,22 @@ async function submitTab() {
     : await createSystemConfigTab(tabForm)
   applyGroups(nextGroups)
   tabDialogVisible.value = false
-  ElMessage.success(t('configManage.saved'))
+  ElMessage.success('保存成功')
 }
 
 async function handleDeleteTab(tab: SystemConfigTab) {
-  await ElMessageBox.confirm(t('configManage.deleteTabConfirm', { name: tab.title }), t('common.deleteConfirmation'), {
+  await ElMessageBox.confirm(`确定删除配置标签「${tab.title}」吗？标签下的自定义配置项也会删除。`, '删除确认', {
     type: 'warning',
   })
   applyGroups(await deleteSystemConfigTab(tab.id))
-  ElMessage.success(t('configManage.deleted'))
+  ElMessage.success('删除成功')
 }
 
 function openCreateItem() {
   const firstTabId = filter.tab_id || tabOptions.value[0]?.id || allTabs.value[0]?.id || 0
 
   if (!firstTabId) {
-    ElMessage.warning(t('configManage.tabRequiredBeforeItem'))
+    ElMessage.warning('请先创建配置 Tab')
     return
   }
 
@@ -409,15 +407,15 @@ async function submitItem() {
     : await createSystemConfigItem(itemForm)
   applyGroups(nextGroups)
   itemDialogVisible.value = false
-  ElMessage.success(t('configManage.saved'))
+  ElMessage.success('保存成功')
 }
 
 async function handleDeleteItem(item: SystemConfigItem) {
-  await ElMessageBox.confirm(t('configManage.deleteItemConfirm', { name: item.name }), t('common.deleteConfirmation'), {
+  await ElMessageBox.confirm(`确定删除配置项「${item.name}」吗？`, '删除确认', {
     type: 'warning',
   })
   applyGroups(await deleteSystemConfigItem(item.id))
-  ElMessage.success(t('configManage.deleted'))
+  ElMessage.success('删除成功')
 }
 
 onMounted(loadData)
@@ -427,221 +425,221 @@ onMounted(loadData)
   <el-card v-loading="loading" class="page-card table-page-card" shadow="never">
     <template #header>
       <div class="page-toolbar">
-        <div class="page-title">{{ t('configManage.configManagement') }}</div>
+        <div class="page-title">配置管理</div>
         <div class="toolbar-actions">
-          <el-button @click="groupManageVisible = true">{{ t('configManage.groupManagement') }}</el-button>
-          <el-button @click="tabManageVisible = true">{{ t('configManage.tabManagement') }}</el-button>
-          <el-button v-if="canCreate" type="primary" @click="openCreateItem">{{ t('configManage.createConfigItem') }}</el-button>
+          <el-button @click="groupManageVisible = true">分组管理</el-button>
+          <el-button @click="tabManageVisible = true">Tab 管理</el-button>
+          <el-button v-if="canCreate" type="primary" @click="openCreateItem">新增配置项</el-button>
         </div>
       </div>
     </template>
 
     <div class="filter-bar">
-      <el-select v-model="filter.group_id" clearable :placeholder="t('configManage.allGroups')" style="width: 180px" @change="handleGroupChange">
+      <el-select v-model="filter.group_id" clearable placeholder="全部分组" style="width: 180px" @change="handleGroupChange">
         <el-option v-for="group in groups" :key="group.id" :label="group.title" :value="group.id" />
       </el-select>
-      <el-select v-model="filter.tab_id" clearable :placeholder="t('configManage.allTabs')" style="width: 180px">
+      <el-select v-model="filter.tab_id" clearable placeholder="全部 Tab" style="width: 180px">
         <el-option
           v-for="tab in tabOptions"
           :key="tab.id"
-          :label="tab.group_title + ' / ' + tab.title"
+          :label="`${tab.group_title} / ${tab.title}`"
           :value="tab.id"
         />
       </el-select>
-      <el-input v-model="filter.keyword" clearable :placeholder="t('configManage.searchPlaceholder')" style="width: 240px" />
+      <el-input v-model="filter.keyword" clearable placeholder="搜索名称 / 键 / 备注" style="width: 240px" />
     </div>
 
     <el-table :data="filteredItems" border height="100%">
-      <el-table-column prop="name" :label="t('configManage.configName')" min-width="130" />
-      <el-table-column prop="key" :label="t('configManage.configKey')" min-width="150" />
-      <el-table-column prop="group_title" :label="t('configManage.group')" min-width="120" />
-      <el-table-column prop="tab_title" :label="t('configManage.tab')" min-width="120" />
-      <el-table-column :label="t('configManage.configType')" width="120">
+      <el-table-column prop="name" label="配置名称" min-width="130" />
+      <el-table-column prop="key" label="配置键" min-width="150" />
+      <el-table-column prop="group_title" label="分组" min-width="120" />
+      <el-table-column prop="tab_title" label="Tab" min-width="120" />
+      <el-table-column label="类型" width="120">
         <template #default="{ row }">{{ typeLabel(row.type) }}</template>
       </el-table-column>
-      <el-table-column prop="sort" :label="t('configManage.sort')" width="70" />
-      <el-table-column :label="t('configManage.system')" width="75">
+      <el-table-column prop="sort" label="排序" width="70" />
+      <el-table-column label="系统" width="75">
         <template #default="{ row }">
           <el-tag :type="row.is_system === 1 ? 'warning' : 'info'" effect="plain">
-            {{ row.is_system === 1 ? t('configManage.yes') : t('configManage.no') }}
+            {{ row.is_system === 1 ? '是' : '否' }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column :label="t('common.status')" width="75">
+      <el-table-column label="状态" width="75">
         <template #default="{ row }">
-          <el-tag :type="row.status === 1 ? 'success' : 'info'">{{ row.status === 1 ? t('common.enable') : t('common.disabled') }}</el-tag>
+          <el-tag :type="row.status === 1 ? 'success' : 'info'">{{ row.status === 1 ? '启用' : '禁用' }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column prop="remark" :label="t('configManage.remark')" min-width="180" show-overflow-tooltip />
-      <el-table-column prop="create_time" :label="t('common.createTime')" min-width="160" />
-      <el-table-column prop="update_time" :label="t('common.updateTime')" min-width="160" />
-      <el-table-column :label="t('common.actions')" width="130" fixed="right">
+      <el-table-column prop="remark" label="备注" min-width="180" show-overflow-tooltip />
+      <el-table-column prop="create_time" label="创建时间" min-width="160" />
+      <el-table-column prop="update_time" label="修改时间" min-width="160" />
+      <el-table-column label="操作" width="130" fixed="right">
         <template #default="{ row }">
-          <el-button v-if="canUpdate" link type="primary" @click="openEditItem(row)">{{ t('common.edit') }}</el-button>
-          <el-button v-if="canDelete && row.is_system !== 1" link type="danger" @click="handleDeleteItem(row)">{{ t('common.delete') }}</el-button>
+          <el-button v-if="canUpdate" link type="primary" @click="openEditItem(row)">编辑</el-button>
+          <el-button v-if="canDelete && row.is_system !== 1" link type="danger" @click="handleDeleteItem(row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
 
-    <el-dialog v-model="groupManageVisible" :title="t('configManage.groupManagement')" width="980px">
+    <el-dialog v-model="groupManageVisible" title="分组管理" width="980px">
       <div class="dialog-toolbar">
-        <el-button v-if="canCreate" type="primary" @click="openCreateGroup">{{ t('configManage.createGroup') }}</el-button>
+        <el-button v-if="canCreate" type="primary" @click="openCreateGroup">新增分组</el-button>
       </div>
       <el-table :data="groups" border height="420px">
-        <el-table-column prop="title" :label="t('configManage.groupName')" min-width="140" />
-        <el-table-column prop="key" :label="t('configManage.groupKey')" min-width="130" />
-        <el-table-column prop="sort" :label="t('configManage.sort')" width="80" />
-        <el-table-column :label="t('configManage.system')" width="80">
+        <el-table-column prop="title" label="分组名称" min-width="140" />
+        <el-table-column prop="key" label="标识" min-width="130" />
+        <el-table-column prop="sort" label="排序" width="80" />
+        <el-table-column label="系统" width="80">
           <template #default="{ row }">
             <el-tag :type="row.is_system === 1 ? 'warning' : 'info'" effect="plain">
-              {{ row.is_system === 1 ? t('configManage.yes') : t('configManage.no') }}
+              {{ row.is_system === 1 ? '是' : '否' }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column :label="t('common.status')" width="80">
+        <el-table-column label="状态" width="80">
           <template #default="{ row }">
-            <el-tag :type="row.status === 1 ? 'success' : 'info'">{{ row.status === 1 ? t('common.enable') : t('common.disabled') }}</el-tag>
+            <el-tag :type="row.status === 1 ? 'success' : 'info'">{{ row.status === 1 ? '启用' : '禁用' }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="create_time" :label="t('common.createTime')" min-width="160" />
-        <el-table-column prop="update_time" :label="t('common.updateTime')" min-width="160" />
-        <el-table-column :label="t('common.actions')" width="130" fixed="right">
+        <el-table-column prop="create_time" label="创建时间" min-width="160" />
+        <el-table-column prop="update_time" label="修改时间" min-width="160" />
+        <el-table-column label="操作" width="130" fixed="right">
           <template #default="{ row }">
-            <el-button v-if="canUpdate" link type="primary" @click="openEditGroup(row)">{{ t('common.edit') }}</el-button>
-            <el-button v-if="canDelete && row.is_system !== 1" link type="danger" @click="handleDeleteGroup(row)">{{ t('common.delete') }}</el-button>
+            <el-button v-if="canUpdate" link type="primary" @click="openEditGroup(row)">编辑</el-button>
+            <el-button v-if="canDelete && row.is_system !== 1" link type="danger" @click="handleDeleteGroup(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
     </el-dialog>
 
-    <el-dialog v-model="tabManageVisible" :title="t('configManage.tabManagement')" width="1040px">
+    <el-dialog v-model="tabManageVisible" title="Tab 管理" width="1040px">
       <div class="dialog-toolbar">
-        <el-button v-if="canCreate" type="primary" @click="openCreateTab">{{ t('configManage.createTab') }}</el-button>
+        <el-button v-if="canCreate" type="primary" @click="openCreateTab">新增 Tab</el-button>
       </div>
       <el-table :data="allTabs" border height="420px">
-        <el-table-column prop="title" :label="t('configManage.tabName')" min-width="130" />
-        <el-table-column prop="key" :label="t('configManage.tabKey')" min-width="120" />
-        <el-table-column prop="group_title" :label="t('configManage.group')" min-width="130" />
-        <el-table-column prop="sort" :label="t('configManage.sort')" width="70" />
-        <el-table-column :label="t('configManage.system')" width="75">
+        <el-table-column prop="title" label="Tab 名称" min-width="130" />
+        <el-table-column prop="key" label="标识" min-width="120" />
+        <el-table-column prop="group_title" label="所属分组" min-width="130" />
+        <el-table-column prop="sort" label="排序" width="70" />
+        <el-table-column label="系统" width="75">
           <template #default="{ row }">
             <el-tag :type="row.is_system === 1 ? 'warning' : 'info'" effect="plain">
-              {{ row.is_system === 1 ? t('configManage.yes') : t('configManage.no') }}
+              {{ row.is_system === 1 ? '是' : '否' }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column :label="t('common.status')" width="75">
+        <el-table-column label="状态" width="75">
           <template #default="{ row }">
-            <el-tag :type="row.status === 1 ? 'success' : 'info'">{{ row.status === 1 ? t('common.enable') : t('common.disabled') }}</el-tag>
+            <el-tag :type="row.status === 1 ? 'success' : 'info'">{{ row.status === 1 ? '启用' : '禁用' }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="create_time" :label="t('common.createTime')" min-width="150" />
-        <el-table-column prop="update_time" :label="t('common.updateTime')" min-width="150" />
-        <el-table-column :label="t('common.actions')" width="130" fixed="right">
+        <el-table-column prop="create_time" label="创建时间" min-width="150" />
+        <el-table-column prop="update_time" label="修改时间" min-width="150" />
+        <el-table-column label="操作" width="130" fixed="right">
           <template #default="{ row }">
-            <el-button v-if="canUpdate" link type="primary" @click="openEditTab(row)">{{ t('common.edit') }}</el-button>
-            <el-button v-if="canDelete && row.is_system !== 1" link type="danger" @click="handleDeleteTab(row)">{{ t('common.delete') }}</el-button>
+            <el-button v-if="canUpdate" link type="primary" @click="openEditTab(row)">编辑</el-button>
+            <el-button v-if="canDelete && row.is_system !== 1" link type="danger" @click="handleDeleteTab(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
     </el-dialog>
 
-    <el-dialog v-model="groupDialogVisible" :title="editingGroupId ? t('configManage.editGroup') : t('configManage.createGroup')" width="460px">
+    <el-dialog v-model="groupDialogVisible" :title="editingGroupId ? '编辑分组' : '新增分组'" width="460px">
       <el-form ref="groupFormRef" :model="groupForm" :rules="groupRules" label-width="100px">
-        <el-form-item :label="t('configManage.groupKey')" prop="key">
-          <el-input v-model="groupForm.key" :disabled="Boolean(editingGroupId)" placeholder="e.g. frontend / shop" />
+        <el-form-item label="分组标识" prop="key">
+          <el-input v-model="groupForm.key" :disabled="Boolean(editingGroupId)" placeholder="如 frontend / shop" />
         </el-form-item>
-        <el-form-item :label="t('configManage.groupName')" prop="title">
-          <el-input v-model="groupForm.title" placeholder="e.g. Frontend Config / Shop Settings" />
+        <el-form-item label="分组名称" prop="title">
+          <el-input v-model="groupForm.title" placeholder="如 前台配置 / 商城设置" />
         </el-form-item>
-        <el-form-item :label="t('configManage.sort')">
+        <el-form-item label="排序">
           <el-input-number v-model="groupForm.sort" :min="0" />
         </el-form-item>
-        <el-form-item :label="t('common.status')">
+        <el-form-item label="状态">
           <el-switch v-model="groupForm.status" :active-value="1" :inactive-value="0" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="groupDialogVisible = false">{{ t('common.cancel') }}</el-button>
-        <el-button type="primary" @click="submitGroup">{{ t('common.save') }}</el-button>
+        <el-button @click="groupDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitGroup">保存</el-button>
       </template>
     </el-dialog>
 
-    <el-dialog v-model="tabDialogVisible" :title="editingTabId ? t('configManage.editTab') : t('configManage.createTab')" width="460px">
+    <el-dialog v-model="tabDialogVisible" :title="editingTabId ? '编辑 Tab' : '新增 Tab'" width="460px">
       <el-form ref="tabFormRef" :model="tabForm" :rules="tabRules" label-width="100px">
-        <el-form-item :label="t('configManage.group')" prop="group_id">
+        <el-form-item label="所属分组" prop="group_id">
           <el-select v-model="tabForm.group_id" :disabled="Boolean(editingTabId)" style="width: 100%">
             <el-option v-for="group in groups" :key="group.id" :label="group.title" :value="group.id" />
           </el-select>
         </el-form-item>
-        <el-form-item :label="t('configManage.tabKey')" prop="key">
-          <el-input v-model="tabForm.key" :disabled="Boolean(editingTabId)" placeholder="e.g. website / other" />
+        <el-form-item label="Tab 标识" prop="key">
+          <el-input v-model="tabForm.key" :disabled="Boolean(editingTabId)" placeholder="如 website / other" />
         </el-form-item>
-        <el-form-item :label="t('configManage.tabName')" prop="title">
-          <el-input v-model="tabForm.title" placeholder="e.g. Site Info / Other Settings" />
+        <el-form-item label="Tab 名称" prop="title">
+          <el-input v-model="tabForm.title" placeholder="如 网站信息 / 其他设置" />
         </el-form-item>
-        <el-form-item :label="t('configManage.sort')">
+        <el-form-item label="排序">
           <el-input-number v-model="tabForm.sort" :min="0" />
         </el-form-item>
-        <el-form-item :label="t('common.status')">
+        <el-form-item label="状态">
           <el-switch v-model="tabForm.status" :active-value="1" :inactive-value="0" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="tabDialogVisible = false">{{ t('common.cancel') }}</el-button>
-        <el-button type="primary" @click="submitTab">{{ t('common.save') }}</el-button>
+        <el-button @click="tabDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitTab">保存</el-button>
       </template>
     </el-dialog>
 
-    <el-dialog v-model="itemDialogVisible" :title="editingItemId ? t('configManage.editConfigItem') : t('configManage.createConfigItem')" width="560px">
+    <el-dialog v-model="itemDialogVisible" :title="editingItemId ? '编辑配置项' : '新增配置项'" width="560px">
       <el-form ref="itemFormRef" :model="itemForm" :rules="itemRules" label-width="100px">
-        <el-form-item :label="t('configManage.tab')" prop="tab_id">
+        <el-form-item label="所属 Tab" prop="tab_id">
           <el-select v-model="itemForm.tab_id" :disabled="Boolean(editingItemId)" filterable style="width: 100%">
             <el-option
               v-for="tab in allTabs"
               :key="tab.id"
-              :label="tab.group_title + ' / ' + tab.title"
+              :label="`${tab.group_title} / ${tab.title}`"
               :value="tab.id"
             />
           </el-select>
         </el-form-item>
-        <el-form-item :label="t('configManage.configKey')" prop="key">
-          <el-input v-model="itemForm.key" :disabled="Boolean(editingItemId)" placeholder="e.g. site_title" />
+        <el-form-item label="配置键" prop="key">
+          <el-input v-model="itemForm.key" :disabled="Boolean(editingItemId)" placeholder="如 site_title" />
         </el-form-item>
-        <el-form-item :label="t('configManage.configName')" prop="name">
-          <el-input v-model="itemForm.name" placeholder="e.g. Site Title" />
+        <el-form-item label="配置名称" prop="name">
+          <el-input v-model="itemForm.name" placeholder="如 网站标题" />
         </el-form-item>
-        <el-form-item :label="t('configManage.configType')" prop="type">
+        <el-form-item label="配置类型" prop="type">
           <el-select v-model="itemForm.type" :disabled="Boolean(editingItemId)" style="width: 100%">
             <el-option v-for="item in typeOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
-        <el-form-item v-if="optionTypes.includes(itemForm.type)" :label="t('configManage.optionConfig')">
+        <el-form-item v-if="optionTypes.includes(itemForm.type)" label="选项配置">
           <div class="option-editor">
             <div v-for="(option, index) in optionRows" :key="index" class="option-row">
-              <el-input v-model="option.value" :placeholder="t('configManage.optionValue')" />
-              <el-input v-model="option.label" :placeholder="t('configManage.optionLabel')" />
-              <el-button type="danger" plain @click="removeOptionRow(index)">{{ t('common.delete') }}</el-button>
+              <el-input v-model="option.value" placeholder="选项值" />
+              <el-input v-model="option.label" placeholder="选项名称" />
+              <el-button type="danger" plain @click="removeOptionRow(index)">删除</el-button>
             </div>
-            <el-button @click="addOptionRow">{{ t('configManage.addOption') }}</el-button>
+            <el-button @click="addOptionRow">添加选项</el-button>
           </div>
         </el-form-item>
-        <el-form-item :label="t('configManage.defaultValue')">
+        <el-form-item label="默认值">
           <ConfigValueControl v-model="itemForm.value" :item="defaultValueItem" />
         </el-form-item>
-        <el-form-item :label="t('configManage.remark')">
+        <el-form-item label="备注">
           <el-input v-model="itemForm.remark" type="textarea" :rows="3" />
         </el-form-item>
-        <el-form-item :label="t('configManage.sort')">
+        <el-form-item label="排序">
           <el-input-number v-model="itemForm.sort" :min="0" />
         </el-form-item>
-        <el-form-item :label="t('common.status')">
+        <el-form-item label="状态">
           <el-switch v-model="itemForm.status" :active-value="1" :inactive-value="0" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="itemDialogVisible = false">{{ t('common.cancel') }}</el-button>
-        <el-button type="primary" @click="submitItem">{{ t('common.save') }}</el-button>
+        <el-button @click="itemDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitItem">保存</el-button>
       </template>
     </el-dialog>
   </el-card>

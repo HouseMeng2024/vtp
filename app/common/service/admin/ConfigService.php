@@ -122,7 +122,7 @@ class ConfigService
         foreach ($values as $id => $value) {
             $config = SystemConfig::find((int) $id);
             if (!$config) {
-                throw new RuntimeException(\think\facade\Lang::get('admin.config_item_not_found_with_id') . $id);
+                throw new RuntimeException('配置项不存在：' . $id);
             }
 
             $config->save(['value' => $this->normalizeValue($value, (string) $config->type)]);
@@ -142,7 +142,7 @@ class ConfigService
         return [
             'admin_title'      => (string) ConfigValue::getInGroups('title', ['admin'], 'VTP Admin'),
             'site_logo'        => (string) ConfigValue::getInGroups('logo', ['admin'], ''),
-            'site_description' => (string) ConfigValue::getInGroups('description', ['admin'], 'General admin system'),
+            'site_description' => (string) ConfigValue::getInGroups('description', ['admin'], '通用后台管理系统'),
         ];
     }
 
@@ -156,7 +156,7 @@ class ConfigService
         $this->assertGroupKeyAvailable($key);
 
         if (SystemConfigGroup::where('key', $key)->find()) {
-            throw new RuntimeException(\think\facade\Lang::get('admin.group_key_exists'));
+            throw new RuntimeException('分组标识已存在');
         }
 
         SystemConfigGroup::create([
@@ -189,7 +189,7 @@ class ConfigService
             $this->assertGroupKeyAvailable($key);
             $exists = SystemConfigGroup::where('key', $key)->where('id', '<>', $id)->find();
             if ($exists) {
-                throw new RuntimeException(\think\facade\Lang::get('admin.group_key_exists'));
+                throw new RuntimeException('分组标识已存在');
             }
             $data['key'] = $key;
         }
@@ -207,13 +207,13 @@ class ConfigService
         $this->ensureDefaults();
         $group = $this->findGroup($id);
         if ((int) $group->is_system === 1) {
-            throw new RuntimeException(\think\facade\Lang::get('admin.system_group_delete_forbidden'));
+            throw new RuntimeException('系统分组不可删除');
         }
 
         $tabIds = SystemConfigTab::where('group_id', $id)->column('id');
         $systemItem = $tabIds ? SystemConfig::whereIn('tab_id', $tabIds)->where('is_system', 1)->find() : null;
         if ($systemItem) {
-            throw new RuntimeException(\think\facade\Lang::get('admin.system_config_items_under_group'));
+            throw new RuntimeException('分组下存在系统配置项，不可删除');
         }
 
         if ($tabIds) {
@@ -236,7 +236,7 @@ class ConfigService
         $key = $this->validKey((string) ($payload['key'] ?? ''));
         $exists = SystemConfigTab::where('group_id', $group->id)->where('key', $key)->find();
         if ($exists) {
-            throw new RuntimeException(\think\facade\Lang::get('admin.tab_key_exists'));
+            throw new RuntimeException('标签标识已存在');
         }
 
         SystemConfigTab::create([
@@ -272,7 +272,7 @@ class ConfigService
                 ->where('id', '<>', $id)
                 ->find();
             if ($exists) {
-                throw new RuntimeException(\think\facade\Lang::get('admin.tab_key_exists'));
+                throw new RuntimeException('标签标识已存在');
             }
             $data['key'] = $key;
         }
@@ -290,12 +290,12 @@ class ConfigService
         $this->ensureDefaults();
         $tab = $this->findTab($id);
         if ((int) $tab->is_system === 1) {
-            throw new RuntimeException(\think\facade\Lang::get('admin.system_tab_delete_forbidden'));
+            throw new RuntimeException('系统标签不可删除');
         }
 
         $systemItem = SystemConfig::where('tab_id', $id)->where('is_system', 1)->find();
         if ($systemItem) {
-            throw new RuntimeException(\think\facade\Lang::get('admin.system_config_items_under_tab'));
+            throw new RuntimeException('标签下存在系统配置项，不可删除');
         }
 
         SystemConfig::where('tab_id', $id)->delete();
@@ -314,7 +314,7 @@ class ConfigService
         $tab = $this->findTab((int) ($payload['tab_id'] ?? 0));
         $key = $this->validKey((string) ($payload['key'] ?? ''));
         if (SystemConfig::where('group_id', $tab->group_id)->where('key', $key)->find()) {
-            throw new RuntimeException(\think\facade\Lang::get('admin.config_key_exists'));
+            throw new RuntimeException('配置键已存在');
         }
 
         $type = $this->validType((string) ($payload['type'] ?? 'text'));
@@ -368,7 +368,7 @@ class ConfigService
             $groupId = (int) ($data['group_id'] ?? $item->group_id);
             $exists = SystemConfig::where('group_id', $groupId)->where('key', $key)->where('id', '<>', $id)->find();
             if ($exists) {
-                throw new RuntimeException(\think\facade\Lang::get('admin.config_key_exists'));
+                throw new RuntimeException('配置键已存在');
             }
             $data['key'] = $key;
         }
@@ -386,7 +386,7 @@ class ConfigService
         $this->ensureDefaults();
         $item = $this->findItem($id);
         if ((int) $item->is_system === 1) {
-            throw new RuntimeException(\think\facade\Lang::get('admin.system_config_item_delete_forbidden'));
+            throw new RuntimeException('系统配置项不可删除');
         }
 
         $item->delete();
@@ -494,9 +494,9 @@ class ConfigService
     private function groupsConfig(): array
     {
         return [
-            ['key' => 'system', 'title' => 'System', 'sort' => 100],
-            ['key' => 'admin', 'title' => 'Admin', 'sort' => 200],
-            ['key' => 'index', 'title' => 'Index', 'sort' => 300],
+            ['key' => 'system', 'title' => '系统配置', 'sort' => 100],
+            ['key' => 'admin', 'title' => '后台配置', 'sort' => 200],
+            ['key' => 'index', 'title' => '前台配置', 'sort' => 300],
         ];
     }
 
@@ -506,13 +506,13 @@ class ConfigService
     private function tabs(): array
     {
         return [
-            ['group' => 'system', 'key' => 'system_basic', 'title' => 'Basic Rules', 'sort' => 100],
-            ['group' => 'system', 'key' => 'system_upload', 'title' => 'Upload Rules', 'sort' => 200],
-            ['group' => 'system', 'key' => 'system_security', 'title' => 'Security Rules', 'sort' => 300],
-            ['group' => 'admin', 'key' => 'admin_basic', 'title' => 'Admin Basic', 'sort' => 100],
-            ['group' => 'admin', 'key' => 'admin_login', 'title' => 'Login Security', 'sort' => 200],
-            ['group' => 'index', 'key' => 'index_site', 'title' => 'Site Info', 'sort' => 100],
-            ['group' => 'index', 'key' => 'index_seo', 'title' => 'SEO Settings', 'sort' => 200],
+            ['group' => 'system', 'key' => 'system_basic', 'title' => '基础规范', 'sort' => 100],
+            ['group' => 'system', 'key' => 'system_upload', 'title' => '上传规范', 'sort' => 200],
+            ['group' => 'system', 'key' => 'system_security', 'title' => '安全规范', 'sort' => 300],
+            ['group' => 'admin', 'key' => 'admin_basic', 'title' => '后台基础', 'sort' => 100],
+            ['group' => 'admin', 'key' => 'admin_login', 'title' => '登录安全', 'sort' => 200],
+            ['group' => 'index', 'key' => 'index_site', 'title' => '网站信息', 'sort' => 100],
+            ['group' => 'index', 'key' => 'index_seo', 'title' => 'SEO 配置', 'sort' => 200],
         ];
     }
 
@@ -522,26 +522,26 @@ class ConfigService
     private function definitions(): array
     {
         return [
-            ['tab' => 'system_upload', 'key' => 'upload_max_size', 'value' => '10', 'type' => 'number', 'name' => 'Upload Size Limit', 'remark' => 'Unit: MB. Applies to uploads in all modules by default.', 'sort' => 100],
-            ['tab' => 'system_upload', 'key' => 'upload_ext', 'value' => 'jpg,jpeg,png,gif,webp,pdf,doc,docx,xls,xlsx,zip', 'type' => 'text', 'name' => 'Allowed Extensions', 'remark' => 'Use commas to separate multiple extensions.', 'sort' => 101],
+            ['tab' => 'system_upload', 'key' => 'upload_max_size', 'value' => '10', 'type' => 'number', 'name' => '上传大小限制', 'remark' => '单位 MB，所有模块上传默认遵守', 'sort' => 100],
+            ['tab' => 'system_upload', 'key' => 'upload_ext', 'value' => 'jpg,jpeg,png,gif,webp,pdf,doc,docx,xls,xlsx,zip', 'type' => 'text', 'name' => '允许扩展名', 'remark' => '多个扩展名用英文逗号分隔', 'sort' => 101],
 
-            ['tab' => 'system_security', 'key' => 'password_min_length', 'value' => '6', 'type' => 'number', 'name' => 'Password Min Length', 'remark' => 'Minimum password length for system accounts.', 'sort' => 100],
-            ['tab' => 'system_security', 'key' => 'login_max_attempts', 'value' => '5', 'type' => 'number', 'name' => 'Max Login Attempts', 'remark' => 'Temporarily lock the account after this number of failed attempts.', 'sort' => 101],
-            ['tab' => 'system_security', 'key' => 'login_lock_seconds', 'value' => '900', 'type' => 'number', 'name' => 'Login Lock Duration', 'remark' => 'Unit: seconds.', 'sort' => 102],
+            ['tab' => 'system_security', 'key' => 'password_min_length', 'value' => '6', 'type' => 'number', 'name' => '密码最小长度', 'remark' => '系统账号类密码最小长度', 'sort' => 100],
+            ['tab' => 'system_security', 'key' => 'login_max_attempts', 'value' => '5', 'type' => 'number', 'name' => '登录失败次数', 'remark' => '达到次数后临时锁定', 'sort' => 101],
+            ['tab' => 'system_security', 'key' => 'login_lock_seconds', 'value' => '900', 'type' => 'number', 'name' => '登录锁定时长', 'remark' => '单位秒', 'sort' => 102],
 
-            ['tab' => 'admin_basic', 'key' => 'title', 'value' => 'VTP Admin', 'type' => 'text', 'name' => 'Admin Title', 'remark' => 'Browser title and top brand name for the admin panel.', 'sort' => 100],
-            ['tab' => 'admin_basic', 'key' => 'logo', 'value' => '', 'type' => 'image', 'name' => 'Admin Logo', 'remark' => 'Logo used on the admin login page and header.', 'sort' => 101],
-            ['tab' => 'admin_basic', 'key' => 'description', 'value' => 'General admin system', 'type' => 'textarea', 'name' => 'Admin Description', 'remark' => 'Description shown on the admin login page.', 'sort' => 102],
+            ['tab' => 'admin_basic', 'key' => 'title', 'value' => 'VTP Admin', 'type' => 'text', 'name' => '后台标题', 'remark' => '后台浏览器标题和顶部品牌名称', 'sort' => 100],
+            ['tab' => 'admin_basic', 'key' => 'logo', 'value' => '', 'type' => 'image', 'name' => '后台 Logo', 'remark' => '后台登录页和顶部品牌 Logo', 'sort' => 101],
+            ['tab' => 'admin_basic', 'key' => 'description', 'value' => '通用后台管理系统', 'type' => 'textarea', 'name' => '后台描述', 'remark' => '后台登录页展示说明', 'sort' => 102],
 
-            ['tab' => 'admin_login', 'key' => 'token_expire', 'value' => '86400', 'type' => 'number', 'name' => 'Admin Session TTL', 'remark' => 'Unit: seconds. Applies only to the admin module.', 'sort' => 100],
-            ['tab' => 'admin_login', 'key' => 'captcha_enabled', 'value' => '0', 'type' => 'switch', 'name' => 'Login Captcha', 'remark' => 'Require captcha when signing in to the admin panel.', 'sort' => 101],
+            ['tab' => 'admin_login', 'key' => 'token_expire', 'value' => '86400', 'type' => 'number', 'name' => '后台登录有效期', 'remark' => '单位秒，仅作用于 admin 模块', 'sort' => 100],
+            ['tab' => 'admin_login', 'key' => 'captcha_enabled', 'value' => '0', 'type' => 'switch', 'name' => '后台登录验证码', 'remark' => '开启后后台登录需要输入验证码', 'sort' => 101],
 
-            ['tab' => 'index_site', 'key' => 'title', 'value' => 'VTP', 'type' => 'text', 'name' => 'Site Title', 'remark' => 'Default site title for the index module.', 'sort' => 100],
-            ['tab' => 'index_site', 'key' => 'logo', 'value' => '', 'type' => 'image', 'name' => 'Site Logo', 'remark' => 'Logo used by the index site.', 'sort' => 101],
+            ['tab' => 'index_site', 'key' => 'title', 'value' => 'VTP', 'type' => 'text', 'name' => '网站标题', 'remark' => '前台 index 模块默认网站标题', 'sort' => 100],
+            ['tab' => 'index_site', 'key' => 'logo', 'value' => '', 'type' => 'image', 'name' => '网站 Logo', 'remark' => '前台站点 Logo', 'sort' => 101],
 
-            ['tab' => 'index_seo', 'key' => 'seo_title', 'value' => 'VTP', 'type' => 'text', 'name' => 'SEO Title', 'remark' => 'Default SEO title for the index site.', 'sort' => 100],
-            ['tab' => 'index_seo', 'key' => 'seo_keywords', 'value' => '', 'type' => 'text', 'name' => 'SEO Keywords', 'remark' => 'Use commas to separate multiple keywords.', 'sort' => 101],
-            ['tab' => 'index_seo', 'key' => 'seo_description', 'value' => '', 'type' => 'textarea', 'name' => 'SEO Description', 'remark' => 'Default SEO description for the index site.', 'sort' => 102],
+            ['tab' => 'index_seo', 'key' => 'seo_title', 'value' => 'VTP', 'type' => 'text', 'name' => 'SEO 标题', 'remark' => '前台默认 SEO 标题', 'sort' => 100],
+            ['tab' => 'index_seo', 'key' => 'seo_keywords', 'value' => '', 'type' => 'text', 'name' => 'SEO 关键词', 'remark' => '多个关键词用英文逗号分隔', 'sort' => 101],
+            ['tab' => 'index_seo', 'key' => 'seo_description', 'value' => '', 'type' => 'textarea', 'name' => 'SEO 描述', 'remark' => '前台页面默认 SEO 描述', 'sort' => 102],
         ];
     }
 
@@ -610,7 +610,7 @@ class ConfigService
     {
         $group = SystemConfigGroup::find($id);
         if (!$group) {
-            throw new RuntimeException(\think\facade\Lang::get('admin.config_group_not_found'));
+            throw new RuntimeException('配置分组不存在');
         }
         return $group;
     }
@@ -619,7 +619,7 @@ class ConfigService
     {
         $tab = SystemConfigTab::find($id);
         if (!$tab) {
-            throw new RuntimeException(\think\facade\Lang::get('admin.config_tab_not_found'));
+            throw new RuntimeException('配置标签不存在');
         }
         return $tab;
     }
@@ -628,7 +628,7 @@ class ConfigService
     {
         $item = SystemConfig::find($id);
         if (!$item) {
-            throw new RuntimeException(\think\facade\Lang::get('admin.config_item_not_found'));
+            throw new RuntimeException('配置项不存在');
         }
         return $item;
     }
@@ -637,7 +637,7 @@ class ConfigService
     {
         $key = trim($key);
         if (!preg_match('/^[a-z][a-z0-9_]*$/', $key)) {
-            throw new RuntimeException(\think\facade\Lang::get('admin.key_invalid'));
+            throw new RuntimeException('标识只能使用小写字母、数字和下划线，并以字母开头');
         }
         return $key;
     }
@@ -645,7 +645,7 @@ class ConfigService
     private function assertGroupKeyAvailable(string $key): void
     {
         if (in_array($key, self::RESERVED_GROUP_KEYS, true)) {
-            throw new RuntimeException(\think\facade\Lang::get('admin.group_key_reserved') . $key);
+            throw new RuntimeException('分组标识不能使用系统配置名：' . $key);
         }
     }
 
@@ -653,7 +653,7 @@ class ConfigService
     {
         $title = trim($title);
         if ($title === '') {
-            throw new RuntimeException(\think\facade\Lang::get('admin.name_required'));
+            throw new RuntimeException('名称不能为空');
         }
         return $title;
     }
@@ -661,7 +661,7 @@ class ConfigService
     private function validType(string $type): string
     {
         if (!in_array($type, self::TYPES, true)) {
-            throw new RuntimeException(\think\facade\Lang::get('admin.unsupported_config_type'));
+            throw new RuntimeException('配置类型不支持');
         }
         return $type;
     }

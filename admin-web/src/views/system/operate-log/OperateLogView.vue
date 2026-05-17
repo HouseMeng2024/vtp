@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { batchDeleteOperateLogs, clearOperateLogs, fetchOperateLogs, type AdminOperateLogRow } from '../../../api/system'
 import { useAuthStore } from '../../../stores/auth'
 
 const authStore = useAuthStore()
-const { t } = useI18n()
 const loading = ref(false)
 const rows = ref<AdminOperateLogRow[]>([])
 const selectedRows = ref<AdminOperateLogRow[]>([])
@@ -44,28 +42,28 @@ function handleSelectionChange(selection: AdminOperateLogRow[]) {
 
 async function handleBatchDelete() {
   if (selectedRows.value.length === 0) {
-    ElMessage.warning(t('common.selectLogsFirst'))
+    ElMessage.warning('请先选择日志')
     return
   }
 
-  await ElMessageBox.prompt(t('log.bulkDeleteOperateConfirm', { count: selectedRows.value.length }), t('log.bulkDeleteTitle'), {
+  await ElMessageBox.prompt(`确定删除选中的 ${selectedRows.value.length} 条操作日志吗？请输入 DELETE 确认。`, '批量删除确认', {
     inputPattern: /^DELETE$/,
-    inputErrorMessage: t('log.enterDelete'),
+    inputErrorMessage: '请输入 DELETE',
     type: 'warning',
   })
   await batchDeleteOperateLogs(selectedIds())
-  ElMessage.success(t('common.bulkDeleteSuccess'))
+  ElMessage.success('批量删除成功')
   loadData()
 }
 
 async function handleClear() {
-  await ElMessageBox.prompt(t('log.clearOperateConfirm'), t('common.clearConfirmation'), {
+  await ElMessageBox.prompt('确定清空全部操作日志吗？请输入 CLEAR 确认。', '清空确认', {
     inputPattern: /^CLEAR$/,
-    inputErrorMessage: t('log.enterClear'),
+    inputErrorMessage: '请输入 CLEAR',
     type: 'warning',
   })
   await clearOperateLogs()
-  ElMessage.success(t('log.operateCleared'))
+  ElMessage.success('操作日志已清空')
   loadData()
 }
 
@@ -76,7 +74,7 @@ onMounted(loadData)
   <el-card class="page-card table-page-card" shadow="never">
     <template #header>
       <div class="page-toolbar">
-        <div class="page-title">{{ t('log.operationLogs') }}</div>
+        <div class="page-title">操作日志</div>
         <el-space>
           <el-button
             v-if="authStore.hasPermission('admin:operate-log:delete')"
@@ -84,21 +82,21 @@ onMounted(loadData)
             :disabled="selectedRows.length === 0"
             @click="handleBatchDelete"
           >
-            {{ t('common.bulkDelete') }}
+            批量删除
           </el-button>
           <el-button v-if="authStore.hasPermission('admin:operate-log:clear')" type="danger" @click="handleClear">
-            {{ t('common.clearLogs') }}
+            清空日志
           </el-button>
         </el-space>
       </div>
     </template>
 
     <el-form class="page-search" inline @submit.prevent>
-      <el-form-item :label="t('common.keyword')">
-        <el-input v-model="query.keyword" clearable :placeholder="t('common.accountPathIp')" @keyup.enter="handleSearch" />
+      <el-form-item label="关键词">
+        <el-input v-model="query.keyword" clearable placeholder="账号 / 路径 / IP" @keyup.enter="handleSearch" />
       </el-form-item>
-      <el-form-item :label="t('common.method')">
-        <el-select v-model="query.method" clearable :placeholder="t('common.all')" style="width: 120px">
+      <el-form-item label="方法">
+        <el-select v-model="query.method" clearable placeholder="全部" style="width: 120px">
           <el-option label="POST" value="POST" />
           <el-option label="PUT" value="PUT" />
           <el-option label="PATCH" value="PATCH" />
@@ -106,7 +104,7 @@ onMounted(loadData)
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="handleSearch">{{ t('common.search') }}</el-button>
+        <el-button type="primary" @click="handleSearch">查询</el-button>
       </el-form-item>
     </el-form>
 
@@ -114,17 +112,17 @@ onMounted(loadData)
       <el-table v-loading="loading" :data="rows" border height="100%" @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="48" />
         <el-table-column prop="id" label="ID" width="90" />
-        <el-table-column prop="username" :label="t('common.account')" min-width="130" />
-        <el-table-column prop="title" :label="t('common.actions')" min-width="140" />
-        <el-table-column prop="method" :label="t('common.method')" width="100" />
-        <el-table-column prop="path" :label="t('common.path')" min-width="220" show-overflow-tooltip />
-        <el-table-column prop="params" :label="t('common.params')" min-width="220" show-overflow-tooltip />
-        <el-table-column prop="response" :label="t('common.response')" min-width="220" show-overflow-tooltip />
+        <el-table-column prop="username" label="账号" min-width="130" />
+        <el-table-column prop="title" label="操作" min-width="140" />
+        <el-table-column prop="method" label="方法" width="100" />
+        <el-table-column prop="path" label="路径" min-width="220" show-overflow-tooltip />
+        <el-table-column prop="params" label="参数" min-width="220" show-overflow-tooltip />
+        <el-table-column prop="response" label="响应" min-width="220" show-overflow-tooltip />
         <el-table-column prop="ip" label="IP" min-width="140" />
-        <el-table-column prop="status_code" :label="t('common.statusCode')" width="100" />
-        <el-table-column prop="duration_ms" :label="t('common.duration')" width="110" />
-        <el-table-column prop="user_agent" :label="t('common.userAgent')" min-width="260" show-overflow-tooltip />
-        <el-table-column prop="create_time" :label="t('common.actionTime')" min-width="170" />
+        <el-table-column prop="status_code" label="状态码" width="100" />
+        <el-table-column prop="duration_ms" label="耗时(ms)" width="110" />
+        <el-table-column prop="user_agent" label="User-Agent" min-width="260" show-overflow-tooltip />
+        <el-table-column prop="create_time" label="操作时间" min-width="170" />
       </el-table>
     </div>
 

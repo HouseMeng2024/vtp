@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import {
   Connection,
   DataLine,
@@ -34,14 +33,13 @@ interface DashboardSummary {
 const loading = ref(false)
 const summary = ref<DashboardSummary | null>(null)
 const authStore = useAuthStore()
-const { t } = useI18n()
 const statCards = computed(() => [
-  { label: t('dashboard.admins'), value: summary.value?.cards.users || 0, type: 'primary', icon: User },
-  { label: t('dashboard.roles'), value: summary.value?.cards.roles || 0, type: 'success', icon: DataLine },
-  { label: t('dashboard.menuNodes'), value: summary.value?.cards.menus || 0, type: 'warning', icon: MenuIcon },
-  { label: t('dashboard.files'), value: summary.value?.cards.files || 0, type: 'danger', icon: Files },
-  { label: t('dashboard.todayLogins'), value: summary.value?.cards.today_logins || 0, type: 'primary', icon: Connection },
-  { label: t('dashboard.todayActions'), value: summary.value?.cards.today_operates || 0, type: 'success', icon: Refresh },
+  { label: '管理员', value: summary.value?.cards.users || 0, type: 'primary', icon: User },
+  { label: '角色数量', value: summary.value?.cards.roles || 0, type: 'success', icon: DataLine },
+  { label: '菜单节点', value: summary.value?.cards.menus || 0, type: 'warning', icon: MenuIcon },
+  { label: '文件数量', value: summary.value?.cards.files || 0, type: 'danger', icon: Files },
+  { label: '今日登录', value: summary.value?.cards.today_logins || 0, type: 'primary', icon: Connection },
+  { label: '今日操作', value: summary.value?.cards.today_operates || 0, type: 'success', icon: Refresh },
 ])
 const maxLoginTotal = computed(() => Math.max(...(summary.value?.login_trend.map((item) => item.total) || [1]), 1))
 
@@ -68,12 +66,12 @@ onMounted(loadDashboard)
     <div class="welcome-panel">
       <div>
         <div class="welcome-title">
-          {{ t('dashboard.welcomeBack', { name: authStore.user?.nickname || authStore.user?.username || t('dashboard.admins') }) }}
+          欢迎回来，{{ authStore.user?.nickname || authStore.user?.username || '管理员' }}
         </div>
-        <div class="welcome-subtitle">{{ t('dashboard.subtitle') }}</div>
+        <div class="welcome-subtitle">控制台展示当前后台的真实运行数据。</div>
       </div>
       <el-button type="primary" :icon="Refresh" :loading="loading" @click="loadDashboard">
-        {{ t('common.refresh') }}
+        刷新
       </el-button>
     </div>
 
@@ -96,8 +94,8 @@ onMounted(loadDashboard)
         <el-card shadow="never" class="panel-card">
           <template #header>
             <div class="card-header">
-              <span>{{ t('dashboard.last7DaysLoginTrend') }}</span>
-              <el-tag type="success" effect="plain">{{ t('dashboard.live') }}</el-tag>
+              <span>近 7 天登录趋势</span>
+              <el-tag type="success" effect="plain">实时</el-tag>
             </div>
           </template>
 
@@ -117,14 +115,14 @@ onMounted(loadDashboard)
         <el-card shadow="never" class="panel-card">
           <template #header>
             <div class="card-header">
-              <span>{{ t('dashboard.fileTypeStats') }}</span>
+              <span>文件类型统计</span>
               <el-icon><Files /></el-icon>
             </div>
           </template>
 
           <div class="file-types">
             <div v-for="item in summary?.file_types || []" :key="item.extension" class="file-type-row">
-              <span>{{ item.extension || t('dashboard.unknown') }}</span>
+              <span>{{ item.extension || 'unknown' }}</span>
               <el-progress :percentage="Math.min(100, item.total * 5)" :show-text="false" />
               <strong>{{ item.total }}</strong>
             </div>
@@ -138,22 +136,22 @@ onMounted(loadDashboard)
         <el-card shadow="never" class="panel-card">
           <template #header>
             <div class="card-header">
-              <span>{{ t('dashboard.recentLogins') }}</span>
+              <span>最近登录</span>
               <el-tag effect="plain">{{ summary?.server.time || '-' }}</el-tag>
             </div>
           </template>
 
           <el-table :data="summary?.recent_logins || []" border>
-            <el-table-column prop="username" :label="t('common.account')" min-width="120" />
+            <el-table-column prop="username" label="账号" min-width="120" />
             <el-table-column prop="ip" label="IP" min-width="130" />
-            <el-table-column :label="t('common.status')" width="90">
+            <el-table-column label="状态" width="90">
               <template #default="{ row }">
                 <el-tag :type="row.status === 1 ? 'success' : 'danger'">
-                  {{ row.status === 1 ? t('common.success') : t('common.failed') }}
+                  {{ row.status === 1 ? '成功' : '失败' }}
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="create_time" :label="t('dashboard.time')" min-width="170" />
+            <el-table-column prop="create_time" label="时间" min-width="170" />
           </el-table>
         </el-card>
       </el-col>
@@ -162,17 +160,17 @@ onMounted(loadDashboard)
         <el-card shadow="never" class="panel-card">
           <template #header>
             <div class="card-header">
-              <span>{{ t('dashboard.recentActions') }}</span>
-              <el-tag effect="plain">{{ t('dashboard.writeActions') }}</el-tag>
+              <span>最近操作</span>
+              <el-tag effect="plain">写操作</el-tag>
             </div>
           </template>
 
           <el-table :data="summary?.recent_operates || []" border>
-            <el-table-column prop="username" :label="t('common.account')" min-width="120" />
-            <el-table-column prop="method" :label="t('common.method')" width="90" />
-            <el-table-column prop="path" :label="t('common.path')" min-width="180" show-overflow-tooltip />
-            <el-table-column prop="status_code" :label="t('common.status')" width="90" />
-            <el-table-column prop="duration_ms" :label="t('common.duration')" width="90" />
+            <el-table-column prop="username" label="账号" min-width="120" />
+            <el-table-column prop="method" label="方法" width="90" />
+            <el-table-column prop="path" label="路径" min-width="180" show-overflow-tooltip />
+            <el-table-column prop="status_code" label="状态" width="90" />
+            <el-table-column prop="duration_ms" label="耗时" width="90" />
           </el-table>
         </el-card>
       </el-col>

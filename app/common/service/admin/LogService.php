@@ -82,7 +82,7 @@ class LogService
         $ids = $this->filterIds($ids);
 
         if (!$ids) {
-            throw new RuntimeException(\think\facade\Lang::get('admin.select_login_logs'));
+            throw new RuntimeException('请选择登录日志');
         }
 
         AdminLoginLog::whereIn('id', $ids)->delete();
@@ -96,7 +96,7 @@ class LogService
         $ids = $this->filterIds($ids);
 
         if (!$ids) {
-            throw new RuntimeException(\think\facade\Lang::get('admin.select_operation_logs'));
+            throw new RuntimeException('请选择操作日志');
         }
 
         AdminOperateLog::whereIn('id', $ids)->delete();
@@ -117,7 +117,7 @@ class LogService
             return;
         }
 
-        throw new RuntimeException(\think\facade\Lang::get('admin.invalid_log_type'));
+        throw new RuntimeException('日志类型错误');
     }
 
     /**

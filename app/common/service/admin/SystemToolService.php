@@ -110,7 +110,7 @@ class SystemToolService
         $path = $this->backupPath($name);
 
         if (!unlink($path)) {
-            throw new RuntimeException(\think\facade\Lang::get('admin.delete_backup_failed'));
+            throw new RuntimeException('备份删除失败');
         }
     }
 
@@ -130,7 +130,7 @@ class SystemToolService
         $dir = runtime_path('database_backup');
 
         if (!is_dir($dir) && !mkdir($dir, 0755, true) && !is_dir($dir)) {
-            throw new RuntimeException(\think\facade\Lang::get('admin.create_backup_dir_failed'));
+            throw new RuntimeException('备份目录创建失败');
         }
 
         return $dir;
@@ -142,13 +142,13 @@ class SystemToolService
     private function backupPath(string $name): string
     {
         if (!preg_match('/^[a-zA-Z0-9_.-]+\.sql$/', $name)) {
-            throw new RuntimeException(\think\facade\Lang::get('admin.invalid_backup_name'));
+            throw new RuntimeException('备份文件名错误');
         }
 
         $path = $this->backupDir() . DIRECTORY_SEPARATOR . $name;
 
         if (!is_file($path)) {
-            throw new RuntimeException(\think\facade\Lang::get('admin.backup_not_found'));
+            throw new RuntimeException('备份文件不存在');
         }
 
         return $path;
@@ -163,7 +163,7 @@ class SystemToolService
         $config = (array) config('database.connections.' . $connection, []);
 
         if (($config['type'] ?? '') !== 'mysql' || empty($config['database'])) {
-            throw new RuntimeException(\think\facade\Lang::get('admin.mysql_only'));
+            throw new RuntimeException('只支持 MySQL 数据库备份');
         }
 
         return $config;

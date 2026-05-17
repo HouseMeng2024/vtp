@@ -52,11 +52,11 @@ class MemberService
         $password = (string) ($data['password'] ?? '');
 
         if ($password === '') {
-            throw new RuntimeException(\think\facade\Lang::get('admin.password_required'));
+            throw new RuntimeException('请输入密码');
         }
 
         if (strlen($password) < 6) {
-            throw new RuntimeException(\think\facade\Lang::get('admin.password_min'));
+            throw new RuntimeException('密码至少 6 位');
         }
 
         $payload['password'] = password_hash($password, PASSWORD_BCRYPT);
@@ -109,7 +109,7 @@ class MemberService
         $ids = $this->filterIds($ids);
 
         if (!$ids) {
-            throw new RuntimeException(\think\facade\Lang::get('admin.select_members'));
+            throw new RuntimeException('请选择会员');
         }
 
         Member::whereIn('id', $ids)->update([
@@ -123,11 +123,11 @@ class MemberService
     public function resetPassword(int $id, string $password): void
     {
         if ($password === '') {
-            throw new RuntimeException(\think\facade\Lang::get('admin.new_password_required'));
+            throw new RuntimeException('请输入新密码');
         }
 
         if (strlen($password) < 6) {
-            throw new RuntimeException(\think\facade\Lang::get('admin.new_password_min'));
+            throw new RuntimeException('新密码至少 6 位');
         }
 
         $this->findMember($id)->save([
@@ -151,7 +151,7 @@ class MemberService
         $ids = $this->filterIds($ids);
 
         if (!$ids) {
-            throw new RuntimeException(\think\facade\Lang::get('admin.select_members'));
+            throw new RuntimeException('请选择会员');
         }
 
         foreach ($ids as $id) {
@@ -167,7 +167,7 @@ class MemberService
         $member = Member::find($id);
 
         if (!$member) {
-            throw new RuntimeException(\think\facade\Lang::get('admin.member_not_found'));
+            throw new RuntimeException('会员不存在');
         }
 
         return $member;
@@ -185,15 +185,15 @@ class MemberService
         $birthday = trim((string) ($data['birthday'] ?? ''));
 
         if ($username === '') {
-            throw new RuntimeException(\think\facade\Lang::get('admin.account_required'));
+            throw new RuntimeException('请输入账号');
         }
 
         if ($mobile !== '' && !preg_match('/^1[3-9]\d{9}$/', $mobile)) {
-            throw new RuntimeException(\think\facade\Lang::get('admin.invalid_mobile'));
+            throw new RuntimeException('手机号格式不正确');
         }
 
         if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            throw new RuntimeException(\think\facade\Lang::get('admin.invalid_email'));
+            throw new RuntimeException('邮箱格式不正确');
         }
 
         if ($nickname === '') {

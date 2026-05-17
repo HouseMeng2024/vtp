@@ -176,7 +176,7 @@ CREATE TABLE `vtp_system_config_group` (
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_group_key` (`group_id`, `key`),
+  UNIQUE KEY `uk_key` (`key`),
   KEY `idx_sort` (`sort`),
   KEY `idx_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='系统配置分组';
@@ -316,119 +316,119 @@ CREATE TABLE `vtp_dict_data` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='字典数据';
 
 INSERT INTO `vtp_admin_user` (`id`, `username`, `password`, `nickname`, `status`, `create_time`, `update_time`) VALUES
-(1, 'admin', '$2y$12$FUyMIXrNAocLiLyVw1bWO.uTFnCan1dcOKyfNzFCsdlZ63tpFfSaK', 'Super Admin', 1, NOW(), NOW());
+(1, 'admin', '$2y$12$FUyMIXrNAocLiLyVw1bWO.uTFnCan1dcOKyfNzFCsdlZ63tpFfSaK', '超级管理员', 1, NOW(), NOW());
 
 INSERT INTO `vtp_admin_role` (`id`, `name`, `code`, `sort`, `status`, `data_scope`, `remark`, `create_time`, `update_time`) VALUES
-(1, 'Super Administrator', 'super_admin', 1, 1, 'all', 'Full access', NOW(), NOW());
+(1, '超级管理员', 'super_admin', 1, 1, 'all', '拥有全部权限', NOW(), NOW());
 
 INSERT INTO `vtp_admin_user_role` (`user_id`, `role_id`, `create_time`) VALUES
 (1, 1, NOW());
 
 INSERT INTO `vtp_system_config_group` (`id`, `key`, `title`, `sort`, `is_system`, `status`, `create_time`, `update_time`) VALUES
-(1, 'system', 'System', 100, 1, 1, NOW(), NOW()),
-(2, 'admin', 'Admin', 200, 1, 1, NOW(), NOW()),
-(3, 'index', 'Index', 300, 1, 1, NOW(), NOW());
+(1, 'system', '系统配置', 100, 1, 1, NOW(), NOW()),
+(2, 'admin', '后台配置', 200, 1, 1, NOW(), NOW()),
+(3, 'index', '前台配置', 300, 1, 1, NOW(), NOW());
 
 INSERT INTO `vtp_system_config_tab` (`id`, `group_id`, `key`, `title`, `sort`, `is_system`, `status`, `create_time`, `update_time`) VALUES
-(1, 1, 'system_basic', 'Basic Rules', 100, 1, 1, NOW(), NOW()),
-(2, 1, 'system_upload', 'Upload Rules', 200, 1, 1, NOW(), NOW()),
-(3, 1, 'system_security', 'Security Rules', 300, 1, 1, NOW(), NOW()),
-(4, 2, 'admin_basic', 'Admin Basic', 100, 1, 1, NOW(), NOW()),
-(5, 2, 'admin_login', 'Login Security', 200, 1, 1, NOW(), NOW()),
-(6, 3, 'index_site', 'Site Info', 100, 1, 1, NOW(), NOW()),
-(7, 3, 'index_seo', 'SEO Settings', 200, 1, 1, NOW(), NOW());
+(1, 1, 'system_basic', '基础规范', 100, 1, 1, NOW(), NOW()),
+(2, 1, 'system_upload', '上传规范', 200, 1, 1, NOW(), NOW()),
+(3, 1, 'system_security', '安全规范', 300, 1, 1, NOW(), NOW()),
+(4, 2, 'admin_basic', '后台基础', 100, 1, 1, NOW(), NOW()),
+(5, 2, 'admin_login', '登录安全', 200, 1, 1, NOW(), NOW()),
+(6, 3, 'index_site', '网站信息', 100, 1, 1, NOW(), NOW()),
+(7, 3, 'index_seo', 'SEO 配置', 200, 1, 1, NOW(), NOW());
 
 INSERT INTO `vtp_system_config` (`id`, `group_id`, `tab_id`, `group`, `key`, `value`, `type`, `name`, `remark`, `options`, `sort`, `is_system`, `status`, `create_time`, `update_time`) VALUES
-(1, 1, 2, 'system_upload', 'upload_max_size', '10', 'number', 'Upload Size Limit', 'Unit: MB. Applies to uploads in all modules by default.', '', 100, 1, 1, NOW(), NOW()),
-(2, 1, 2, 'system_upload', 'upload_ext', 'jpg,jpeg,png,gif,webp,pdf,doc,docx,xls,xlsx,zip', 'text', 'Allowed Extensions', 'Use commas to separate multiple extensions.', '', 101, 1, 1, NOW(), NOW()),
-(3, 1, 3, 'system_security', 'password_min_length', '6', 'number', 'Password Min Length', 'Minimum password length for system accounts.', '', 100, 1, 1, NOW(), NOW()),
-(4, 1, 3, 'system_security', 'login_max_attempts', '5', 'number', 'Max Login Attempts', 'Temporarily lock the account after this number of failed attempts.', '', 101, 1, 1, NOW(), NOW()),
-(5, 1, 3, 'system_security', 'login_lock_seconds', '900', 'number', 'Login Lock Duration', 'Unit: seconds.', '', 102, 1, 1, NOW(), NOW()),
-(6, 2, 4, 'admin_basic', 'title', 'VTP Admin', 'text', 'Admin Title', 'Browser title and top brand name for the admin panel.', '', 100, 1, 1, NOW(), NOW()),
-(7, 2, 4, 'admin_basic', 'logo', '', 'image', 'Admin Logo', 'Logo used on the admin login page and header.', '', 101, 1, 1, NOW(), NOW()),
-(8, 2, 4, 'admin_basic', 'description', 'General admin system', 'textarea', 'Admin Description', 'Description shown on the admin login page.', '', 102, 1, 1, NOW(), NOW()),
-(9, 2, 5, 'admin_login', 'token_expire', '86400', 'number', 'Admin Session TTL', 'Unit: seconds. Applies only to the admin module.', '', 100, 1, 1, NOW(), NOW()),
-(10, 2, 5, 'admin_login', 'captcha_enabled', '0', 'switch', 'Login Captcha', 'Require captcha when signing in to the admin panel.', '', 101, 1, 1, NOW(), NOW()),
-(11, 3, 6, 'index_site', 'title', 'VTP', 'text', 'Site Title', 'Default site title for the index module.', '', 100, 1, 1, NOW(), NOW()),
-(12, 3, 6, 'index_site', 'logo', '', 'image', 'Site Logo', 'Logo used by the index site.', '', 101, 1, 1, NOW(), NOW()),
-(13, 3, 7, 'index_seo', 'seo_title', 'VTP', 'text', 'SEO Title', 'Default SEO title for the index site.', '', 100, 1, 1, NOW(), NOW()),
-(14, 3, 7, 'index_seo', 'seo_keywords', '', 'text', 'SEO Keywords', 'Use commas to separate multiple keywords.', '', 101, 1, 1, NOW(), NOW()),
-(15, 3, 7, 'index_seo', 'seo_description', '', 'textarea', 'SEO Description', 'Default SEO description for the index site.', '', 102, 1, 1, NOW(), NOW());
+(1, 1, 2, 'system_upload', 'upload_max_size', '10', 'number', '上传大小限制', '单位 MB，所有模块上传默认遵守', '', 100, 1, 1, NOW(), NOW()),
+(2, 1, 2, 'system_upload', 'upload_ext', 'jpg,jpeg,png,gif,webp,pdf,doc,docx,xls,xlsx,zip', 'text', '允许扩展名', '多个扩展名用英文逗号分隔', '', 101, 1, 1, NOW(), NOW()),
+(3, 1, 3, 'system_security', 'password_min_length', '6', 'number', '密码最小长度', '系统账号类密码最小长度', '', 100, 1, 1, NOW(), NOW()),
+(4, 1, 3, 'system_security', 'login_max_attempts', '5', 'number', '登录失败次数', '达到次数后临时锁定', '', 101, 1, 1, NOW(), NOW()),
+(5, 1, 3, 'system_security', 'login_lock_seconds', '900', 'number', '登录锁定时长', '单位秒', '', 102, 1, 1, NOW(), NOW()),
+(6, 2, 4, 'admin_basic', 'title', 'VTP Admin', 'text', '后台标题', '后台浏览器标题和顶部品牌名称', '', 100, 1, 1, NOW(), NOW()),
+(7, 2, 4, 'admin_basic', 'logo', '', 'image', '后台 Logo', '后台登录页和顶部品牌 Logo', '', 101, 1, 1, NOW(), NOW()),
+(8, 2, 4, 'admin_basic', 'description', '通用后台管理系统', 'textarea', '后台描述', '后台登录页展示说明', '', 102, 1, 1, NOW(), NOW()),
+(9, 2, 5, 'admin_login', 'token_expire', '86400', 'number', '后台登录有效期', '单位秒，仅作用于 admin 模块', '', 100, 1, 1, NOW(), NOW()),
+(10, 2, 5, 'admin_login', 'captcha_enabled', '0', 'switch', '后台登录验证码', '开启后后台登录需要输入验证码', '', 101, 1, 1, NOW(), NOW()),
+(11, 3, 6, 'index_site', 'title', 'VTP', 'text', '网站标题', '前台 index 模块默认网站标题', '', 100, 1, 1, NOW(), NOW()),
+(12, 3, 6, 'index_site', 'logo', '', 'image', '网站 Logo', '前台站点 Logo', '', 101, 1, 1, NOW(), NOW()),
+(13, 3, 7, 'index_seo', 'seo_title', 'VTP', 'text', 'SEO 标题', '前台默认 SEO 标题', '', 100, 1, 1, NOW(), NOW()),
+(14, 3, 7, 'index_seo', 'seo_keywords', '', 'text', 'SEO 关键词', '多个关键词用英文逗号分隔', '', 101, 1, 1, NOW(), NOW()),
+(15, 3, 7, 'index_seo', 'seo_description', '', 'textarea', 'SEO 描述', '前台页面默认 SEO 描述', '', 102, 1, 1, NOW(), NOW());
 
 INSERT INTO `vtp_dict_type` (`id`, `name`, `type`, `sort`, `status`, `remark`, `create_time`, `update_time`) VALUES
-(1, 'Common Status', 'common_status', 1, 1, 'Common enabled and disabled status.', NOW(), NOW()),
-(2, 'Switch Status', 'switch_status', 2, 1, 'Common switch status.', NOW(), NOW());
+(1, '通用状态', 'common_status', 1, 1, '通用启用禁用状态', NOW(), NOW()),
+(2, '开关状态', 'switch_status', 2, 1, '通用开关状态', NOW(), NOW());
 
 INSERT INTO `vtp_dict_data` (`type_id`, `label`, `value`, `tag_type`, `sort`, `status`, `remark`, `create_time`, `update_time`) VALUES
-(1, 'Enabled', '1', 'success', 1, 1, '', NOW(), NOW()),
-(1, 'Disabled', '0', 'info', 2, 1, '', NOW(), NOW()),
-(2, 'On', '1', 'success', 1, 1, '', NOW(), NOW()),
-(2, 'Off', '0', 'info', 2, 1, '', NOW(), NOW());
+(1, '正常', '1', 'success', 1, 1, '', NOW(), NOW()),
+(1, '禁用', '0', 'info', 2, 1, '', NOW(), NOW()),
+(2, '开启', '1', 'success', 1, 1, '', NOW(), NOW()),
+(2, '关闭', '0', 'info', 2, 1, '', NOW(), NOW());
 
 INSERT INTO `vtp_admin_menu` (`id`, `parent_id`, `type`, `title`, `permission`, `path`, `component`, `icon`, `sort`, `visible`, `status`, `create_time`, `update_time`) VALUES
-(1, 0, 1, 'System Settings', '', '/system', '', 'Setting', 400, 1, 1, NOW(), NOW()),
-(2, 48, 2, 'Admin Users', 'admin:user:list', '/permission/users', 'system/user/index', 'User', 100, 1, 1, NOW(), NOW()),
-(3, 2, 3, 'Create Admin', 'admin:user:create', '', '', '', 100, 0, 1, NOW(), NOW()),
-(4, 2, 3, 'Edit Admin', 'admin:user:update', '', '', '', 101, 0, 1, NOW(), NOW()),
-(5, 2, 3, 'Delete Admin', 'admin:user:delete', '', '', '', 102, 0, 1, NOW(), NOW()),
-(6, 48, 2, 'Roles', 'admin:role:list', '/permission/roles', 'system/role/index', 'UserFilled', 101, 1, 1, NOW(), NOW()),
-(7, 48, 2, 'Menus', 'admin:menu:list', '/permission/menus', 'system/menu/index', 'Menu', 102, 1, 1, NOW(), NOW()),
-(8, 2, 3, 'Toggle Admin Status', 'admin:user:status', '', '', '', 103, 0, 1, NOW(), NOW()),
-(9, 6, 3, 'Create Role', 'admin:role:create', '', '', '', 100, 0, 1, NOW(), NOW()),
-(10, 6, 3, 'Edit Role', 'admin:role:update', '', '', '', 101, 0, 1, NOW(), NOW()),
-(11, 6, 3, 'Toggle Role Status', 'admin:role:status', '', '', '', 102, 0, 1, NOW(), NOW()),
-(12, 6, 3, 'Delete Role', 'admin:role:delete', '', '', '', 103, 0, 1, NOW(), NOW()),
-(13, 6, 3, 'Assign Role Permissions', 'admin:role:permission', '', '', '', 104, 0, 1, NOW(), NOW()),
-(14, 7, 3, 'Create Menu', 'admin:menu:create', '', '', '', 100, 0, 1, NOW(), NOW()),
-(15, 7, 3, 'Edit Menu', 'admin:menu:update', '', '', '', 101, 0, 1, NOW(), NOW()),
-(16, 7, 3, 'Delete Menu', 'admin:menu:delete', '', '', '', 102, 0, 1, NOW(), NOW()),
-(17, 1, 2, 'Project Config', 'admin:config:list', '/system/config', 'system/config/index', 'Tools', 100, 1, 1, NOW(), NOW()),
-(18, 17, 3, 'Save Project Config', 'admin:config:update', '', '', '', 100, 0, 1, NOW(), NOW()),
-(57, 1, 2, 'Config Management', 'admin:config-manage:list', '/system/config-manage', 'system/config-manage/index', 'Operation', 106, 1, 1, NOW(), NOW()),
-(58, 57, 3, 'Create Config Structure', 'admin:config-manage:create', '', '', '', 100, 0, 1, NOW(), NOW()),
-(59, 57, 3, 'Edit Config Structure', 'admin:config-manage:update', '', '', '', 101, 0, 1, NOW(), NOW()),
-(60, 57, 3, 'Delete Config Structure', 'admin:config-manage:delete', '', '', '', 102, 0, 1, NOW(), NOW()),
-(19, 1, 2, 'File Management', 'admin:file:list', '/system/files', 'system/file/index', 'FolderOpened', 103, 1, 1, NOW(), NOW()),
-(20, 19, 3, 'Upload File', 'admin:file:upload', '', '', '', 100, 0, 1, NOW(), NOW()),
-(21, 19, 3, 'Delete File', 'admin:file:delete', '', '', '', 101, 0, 1, NOW(), NOW()),
-(22, 1, 2, 'Dictionaries', 'admin:dict:list', '/system/dicts', 'system/dict/index', 'Tickets', 101, 1, 1, NOW(), NOW()),
-(23, 22, 3, 'Create Dictionary', 'admin:dict:create', '', '', '', 100, 0, 1, NOW(), NOW()),
-(24, 22, 3, 'Edit Dictionary', 'admin:dict:update', '', '', '', 101, 0, 1, NOW(), NOW()),
-(25, 22, 3, 'Toggle Dictionary Status', 'admin:dict:status', '', '', '', 102, 0, 1, NOW(), NOW()),
-(26, 22, 3, 'Delete Dictionary', 'admin:dict:delete', '', '', '', 103, 0, 1, NOW(), NOW()),
-(27, 0, 1, 'Logs', '', '/logs', '', 'Document', 200, 1, 1, NOW(), NOW()),
-(28, 27, 2, 'Login Logs', 'admin:login-log:list', '/logs/login', 'system/login-log/index', 'Key', 100, 1, 1, NOW(), NOW()),
-(29, 27, 2, 'Operation Logs', 'admin:operate-log:list', '/logs/operate', 'system/operate-log/index', 'DocumentChecked', 101, 1, 1, NOW(), NOW()),
-(30, 2, 3, 'Force Admin Offline', 'admin:user:force-logout', '', '', '', 104, 0, 1, NOW(), NOW()),
-(31, 19, 3, 'Edit File', 'admin:file:update', '', '', '', 102, 0, 1, NOW(), NOW()),
-(32, 28, 3, 'Delete Login Log', 'admin:login-log:delete', '', '', '', 100, 0, 1, NOW(), NOW()),
-(33, 28, 3, 'Clear Login Logs', 'admin:login-log:clear', '', '', '', 101, 0, 1, NOW(), NOW()),
-(34, 29, 3, 'Delete Operation Log', 'admin:operate-log:delete', '', '', '', 100, 0, 1, NOW(), NOW()),
-(35, 29, 3, 'Clear Operation Logs', 'admin:operate-log:clear', '', '', '', 101, 0, 1, NOW(), NOW()),
-(36, 1, 2, 'System Tools', 'admin:tool:list', '/system/tools', 'system/tool/index', 'Operation', 104, 1, 1, NOW(), NOW()),
-(37, 36, 3, 'Clear Cache', 'admin:tool:cache-clear', '', '', '', 100, 0, 1, NOW(), NOW()),
-(38, 36, 3, 'View Database Backups', 'admin:tool:backup-list', '', '', '', 101, 0, 1, NOW(), NOW()),
-(39, 36, 3, 'Create Database Backup', 'admin:tool:backup-create', '', '', '', 102, 0, 1, NOW(), NOW()),
-(40, 36, 3, 'Restore Database Backup', 'admin:tool:backup-restore', '', '', '', 103, 0, 1, NOW(), NOW()),
-(41, 36, 3, 'Delete Database Backup', 'admin:tool:backup-delete', '', '', '', 104, 0, 1, NOW(), NOW()),
-(42, 36, 3, 'Download Database Backup', 'admin:tool:backup-download', '', '', '', 105, 0, 1, NOW(), NOW()),
-(49, 1, 2, 'Code Generator', 'admin:code-generator:list', '/system/code-generator', 'system/code-generator/index', 'Files', 105, 1, 1, NOW(), NOW()),
-(50, 49, 3, 'Generate Code', 'admin:code-generator:generate', '', '', '', 100, 0, 1, NOW(), NOW()),
-(43, 1, 2, 'Notices', 'admin:notice:list', '/system/notices', 'system/notice/index', 'Bell', 102, 1, 1, NOW(), NOW()),
-(44, 43, 3, 'Create Notice', 'admin:notice:create', '', '', '', 100, 0, 1, NOW(), NOW()),
-(45, 43, 3, 'Edit Notice', 'admin:notice:update', '', '', '', 101, 0, 1, NOW(), NOW()),
-(46, 43, 3, 'Toggle Notice Status', 'admin:notice:status', '', '', '', 102, 0, 1, NOW(), NOW()),
-(47, 43, 3, 'Delete Notice', 'admin:notice:delete', '', '', '', 103, 0, 1, NOW(), NOW()),
-(48, 0, 1, 'Permissions', '', '/permission', '', 'UserFilled', 100, 1, 1, NOW(), NOW()),
-(51, 0, 2, 'Members', 'admin:member:list', '/member', 'member/index', 'User', 80, 1, 1, NOW(), NOW()),
-(52, 51, 3, 'Create Member', 'admin:member:create', '', '', '', 100, 0, 1, NOW(), NOW()),
-(53, 51, 3, 'Edit Member', 'admin:member:update', '', '', '', 101, 0, 1, NOW(), NOW()),
-(54, 51, 3, 'Toggle Member Status', 'admin:member:status', '', '', '', 102, 0, 1, NOW(), NOW()),
-(55, 51, 3, 'Reset Member Password', 'admin:member:reset-password', '', '', '', 103, 0, 1, NOW(), NOW()),
-(56, 51, 3, 'Delete Member', 'admin:member:delete', '', '', '', 104, 0, 1, NOW(), NOW());
+(1, 0, 1, '系统设置', '', '/system', '', 'Setting', 400, 1, 1, NOW(), NOW()),
+(2, 48, 2, '管理员管理', 'admin:user:list', '/permission/users', 'system/user/index', 'User', 100, 1, 1, NOW(), NOW()),
+(3, 2, 3, '新增管理员', 'admin:user:create', '', '', '', 100, 0, 1, NOW(), NOW()),
+(4, 2, 3, '编辑管理员', 'admin:user:update', '', '', '', 101, 0, 1, NOW(), NOW()),
+(5, 2, 3, '删除管理员', 'admin:user:delete', '', '', '', 102, 0, 1, NOW(), NOW()),
+(6, 48, 2, '角色管理', 'admin:role:list', '/permission/roles', 'system/role/index', 'UserFilled', 101, 1, 1, NOW(), NOW()),
+(7, 48, 2, '菜单管理', 'admin:menu:list', '/permission/menus', 'system/menu/index', 'Menu', 102, 1, 1, NOW(), NOW()),
+(8, 2, 3, '禁用启用管理员', 'admin:user:status', '', '', '', 103, 0, 1, NOW(), NOW()),
+(9, 6, 3, '新增角色', 'admin:role:create', '', '', '', 100, 0, 1, NOW(), NOW()),
+(10, 6, 3, '编辑角色', 'admin:role:update', '', '', '', 101, 0, 1, NOW(), NOW()),
+(11, 6, 3, '禁用启用角色', 'admin:role:status', '', '', '', 102, 0, 1, NOW(), NOW()),
+(12, 6, 3, '删除角色', 'admin:role:delete', '', '', '', 103, 0, 1, NOW(), NOW()),
+(13, 6, 3, '分配角色权限', 'admin:role:permission', '', '', '', 104, 0, 1, NOW(), NOW()),
+(14, 7, 3, '新增菜单', 'admin:menu:create', '', '', '', 100, 0, 1, NOW(), NOW()),
+(15, 7, 3, '编辑菜单', 'admin:menu:update', '', '', '', 101, 0, 1, NOW(), NOW()),
+(16, 7, 3, '删除菜单', 'admin:menu:delete', '', '', '', 102, 0, 1, NOW(), NOW()),
+(17, 1, 2, '项目配置', 'admin:config:list', '/system/config', 'system/config/index', 'Tools', 100, 1, 1, NOW(), NOW()),
+(18, 17, 3, '保存项目配置', 'admin:config:update', '', '', '', 100, 0, 1, NOW(), NOW()),
+(57, 1, 2, '配置管理', 'admin:config-manage:list', '/system/config-manage', 'system/config-manage/index', 'Operation', 106, 1, 1, NOW(), NOW()),
+(58, 57, 3, '新增配置结构', 'admin:config-manage:create', '', '', '', 100, 0, 1, NOW(), NOW()),
+(59, 57, 3, '编辑配置结构', 'admin:config-manage:update', '', '', '', 101, 0, 1, NOW(), NOW()),
+(60, 57, 3, '删除配置结构', 'admin:config-manage:delete', '', '', '', 102, 0, 1, NOW(), NOW()),
+(19, 1, 2, '文件管理', 'admin:file:list', '/system/files', 'system/file/index', 'FolderOpened', 103, 1, 1, NOW(), NOW()),
+(20, 19, 3, '上传文件', 'admin:file:upload', '', '', '', 100, 0, 1, NOW(), NOW()),
+(21, 19, 3, '删除文件', 'admin:file:delete', '', '', '', 101, 0, 1, NOW(), NOW()),
+(22, 1, 2, '字典管理', 'admin:dict:list', '/system/dicts', 'system/dict/index', 'Tickets', 101, 1, 1, NOW(), NOW()),
+(23, 22, 3, '新增字典', 'admin:dict:create', '', '', '', 100, 0, 1, NOW(), NOW()),
+(24, 22, 3, '编辑字典', 'admin:dict:update', '', '', '', 101, 0, 1, NOW(), NOW()),
+(25, 22, 3, '禁用启用字典', 'admin:dict:status', '', '', '', 102, 0, 1, NOW(), NOW()),
+(26, 22, 3, '删除字典', 'admin:dict:delete', '', '', '', 103, 0, 1, NOW(), NOW()),
+(27, 0, 1, '日志管理', '', '/logs', '', 'Document', 200, 1, 1, NOW(), NOW()),
+(28, 27, 2, '登录日志', 'admin:login-log:list', '/logs/login', 'system/login-log/index', 'Key', 100, 1, 1, NOW(), NOW()),
+(29, 27, 2, '操作日志', 'admin:operate-log:list', '/logs/operate', 'system/operate-log/index', 'DocumentChecked', 101, 1, 1, NOW(), NOW()),
+(30, 2, 3, '强制管理员下线', 'admin:user:force-logout', '', '', '', 104, 0, 1, NOW(), NOW()),
+(31, 19, 3, '编辑文件', 'admin:file:update', '', '', '', 102, 0, 1, NOW(), NOW()),
+(32, 28, 3, '删除登录日志', 'admin:login-log:delete', '', '', '', 100, 0, 1, NOW(), NOW()),
+(33, 28, 3, '清空登录日志', 'admin:login-log:clear', '', '', '', 101, 0, 1, NOW(), NOW()),
+(34, 29, 3, '删除操作日志', 'admin:operate-log:delete', '', '', '', 100, 0, 1, NOW(), NOW()),
+(35, 29, 3, '清空操作日志', 'admin:operate-log:clear', '', '', '', 101, 0, 1, NOW(), NOW()),
+(36, 1, 2, '系统工具', 'admin:tool:list', '/system/tools', 'system/tool/index', 'Operation', 104, 1, 1, NOW(), NOW()),
+(37, 36, 3, '清理缓存', 'admin:tool:cache-clear', '', '', '', 100, 0, 1, NOW(), NOW()),
+(38, 36, 3, '查看数据库备份', 'admin:tool:backup-list', '', '', '', 101, 0, 1, NOW(), NOW()),
+(39, 36, 3, '创建数据库备份', 'admin:tool:backup-create', '', '', '', 102, 0, 1, NOW(), NOW()),
+(40, 36, 3, '恢复数据库备份', 'admin:tool:backup-restore', '', '', '', 103, 0, 1, NOW(), NOW()),
+(41, 36, 3, '删除数据库备份', 'admin:tool:backup-delete', '', '', '', 104, 0, 1, NOW(), NOW()),
+(42, 36, 3, '下载数据库备份', 'admin:tool:backup-download', '', '', '', 105, 0, 1, NOW(), NOW()),
+(49, 1, 2, '代码生成', 'admin:code-generator:list', '/system/code-generator', 'system/code-generator/index', 'Files', 105, 1, 1, NOW(), NOW()),
+(50, 49, 3, '生成代码', 'admin:code-generator:generate', '', '', '', 100, 0, 1, NOW(), NOW()),
+(43, 1, 2, '消息通知', 'admin:notice:list', '/system/notices', 'system/notice/index', 'Bell', 102, 1, 1, NOW(), NOW()),
+(44, 43, 3, '新增消息', 'admin:notice:create', '', '', '', 100, 0, 1, NOW(), NOW()),
+(45, 43, 3, '编辑消息', 'admin:notice:update', '', '', '', 101, 0, 1, NOW(), NOW()),
+(46, 43, 3, '启用禁用消息', 'admin:notice:status', '', '', '', 102, 0, 1, NOW(), NOW()),
+(47, 43, 3, '删除消息', 'admin:notice:delete', '', '', '', 103, 0, 1, NOW(), NOW()),
+(48, 0, 1, '权限管理', '', '/permission', '', 'UserFilled', 100, 1, 1, NOW(), NOW()),
+(51, 0, 2, '会员管理', 'admin:member:list', '/member', 'member/index', 'User', 80, 1, 1, NOW(), NOW()),
+(52, 51, 3, '新增会员', 'admin:member:create', '', '', '', 100, 0, 1, NOW(), NOW()),
+(53, 51, 3, '编辑会员', 'admin:member:update', '', '', '', 101, 0, 1, NOW(), NOW()),
+(54, 51, 3, '启用禁用会员', 'admin:member:status', '', '', '', 102, 0, 1, NOW(), NOW()),
+(55, 51, 3, '重置会员密码', 'admin:member:reset-password', '', '', '', 103, 0, 1, NOW(), NOW()),
+(56, 51, 3, '删除会员', 'admin:member:delete', '', '', '', 104, 0, 1, NOW(), NOW());
 
 INSERT INTO `vtp_admin_notice` (`title`, `content`, `type`, `scope_type`, `scope_ids`, `popup`, `status`, `create_time`, `update_time`) VALUES
-('System initialized', 'The general admin modules are enabled and ready for extension.', 'success', 'all', '', 0, 1, NOW(), NOW());
+('系统初始化完成', '通用后台基础模块已经启用，可以继续扩展业务功能。', 'success', 'all', '', 0, 1, NOW(), NOW());
 
 INSERT INTO `vtp_admin_role_menu` (`role_id`, `menu_id`, `create_time`)
 SELECT 1, `id`, NOW() FROM `vtp_admin_menu`;
