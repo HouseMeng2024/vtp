@@ -17,6 +17,10 @@ function logoUrl(url = '') {
     return url
   }
 
+  if (url === '/logo.svg') {
+    return url
+  }
+
   return `${backendOrigin}${url}`
 }
 </script>

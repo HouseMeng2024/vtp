@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">VTP Admin Logo</title>
+  <desc id="desc">VTP 后台系统 Logo</desc>
+  <defs>
+    <linearGradient id="bg" x1="12" y1="8" x2="52" y2="56" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#155EEF"/>
+      <stop offset="0.55" stop-color="#409EFF"/>
+      <stop offset="1" stop-color="#11C5B3"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="#0F172A"/>
+  <path fill="url(#bg)" d="M32 8 54 18.5v16.2c0 13.8-9.4 21.4-22 25.3C19.4 56.1 10 48.5 10 34.7V18.5L32 8Z"/>
+  <path fill="#fff" d="M19 22h8.4l4.6 15.1L36.6 22H45L35.7 48h-7.4L19 22Z"/>
+  <path fill="#DDFBFF" d="M38.5 22H47v6.4h-8.5V22Z"/>
+  <path fill="#DDFBFF" d="M38.5 31.3h7.2c3.5 0 5.3 1.8 5.3 4.8 0 3.2-2.1 5-5.7 5h-6.8v-9.8Zm5.9 5.8c1.1 0 1.7-.4 1.7-1.1 0-.8-.6-1.1-1.7-1.1h-1.5v2.2h1.5Z"/>
+</svg>

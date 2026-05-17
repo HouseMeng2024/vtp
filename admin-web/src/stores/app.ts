@@ -45,7 +45,7 @@ const defaultProjectConfig: ProjectConfig = {
 
 const defaultSiteConfig: SiteConfig = {
   adminTitle: 'VTP Admin',
-  siteLogo: '',
+  siteLogo: '/logo.svg',
   siteDescription: '通用后台管理系统',
 }
 
@@ -138,7 +138,7 @@ export const useAppStore = defineStore('app', {
 
       this.siteConfig = {
         adminTitle: values.admin_title || defaultSiteConfig.adminTitle,
-        siteLogo: values.site_logo || '',
+        siteLogo: values.site_logo || defaultSiteConfig.siteLogo,
         siteDescription: values.site_description || defaultSiteConfig.siteDescription,
       }
 
