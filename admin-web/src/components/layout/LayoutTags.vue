@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { Close } from '@element-plus/icons-vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAppStore } from '../../stores/app'
 
+const { t } = useI18n()
 const appStore = useAppStore()
 const router = useRouter()
 const route = useRoute()
@@ -22,6 +24,10 @@ function closeTag(path: string) {
   const nextView = appStore.visitedViews[currentIndex] || appStore.visitedViews[currentIndex - 1]
   router.push(nextView?.path || '/dashboard')
 }
+
+function tagTitle(path: string, title: string) {
+  return path === '/dashboard' ? t('common.dashboard') : title
+}
 </script>
 
 <template>
@@ -36,7 +42,7 @@ function closeTag(path: string) {
           :class="{ active: route.path === tag.path }"
           @click="router.push(tag.path)"
         >
-          <span>{{ tag.title }}</span>
+          <span>{{ tagTitle(tag.path, tag.title) }}</span>
           <el-icon v-if="tag.path !== '/dashboard'" @click.stop="closeTag(tag.path)">
             <Close />
           </el-icon>

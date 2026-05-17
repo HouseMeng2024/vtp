@@ -18,7 +18,7 @@ watch(
   () => {
     const title = route.meta?.title ? String(route.meta.title) : ''
 
-    if (!title || route.path === '/login' || title === '加载中') {
+    if (!title || route.path === '/login' || ['Loading', 'Loading'].includes(title)) {
       return
     }
 

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import {
   fetchSystemConfigs,
@@ -12,6 +13,7 @@ import ConfigValueControl from './ConfigValueControl.vue'
 
 const authStore = useAuthStore()
 const appStore = useAppStore()
+const { t } = useI18n()
 const loading = ref(false)
 const saving = ref(false)
 const groups = ref<SystemConfigGroup[]>([])
@@ -88,7 +90,7 @@ async function submitForm() {
   try {
     applyGroups(await updateSystemConfigs(payload))
     await appStore.loadSiteConfig()
-    ElMessage.success('保存成功')
+    ElMessage.success(t('common.saved'))
   } finally {
     saving.value = false
   }
@@ -106,8 +108,8 @@ onMounted(loadData)
   <el-card class="page-card config-page-card" shadow="never">
     <template #header>
       <div class="page-toolbar">
-        <div class="page-title">项目配置</div>
-        <el-button v-if="canUpdate" type="primary" :loading="saving" @click="submitForm">保存</el-button>
+        <div class="page-title">{{ t('common.projectSetting') }}</div>
+        <el-button v-if="canUpdate" type="primary" :loading="saving" @click="submitForm">{{ t('common.save') }}</el-button>
       </div>
     </template>
 
@@ -127,7 +129,7 @@ onMounted(loadData)
       </aside>
 
       <section class="config-main">
-        <el-empty v-if="!activeGroup" description="暂无配置分组" />
+        <el-empty v-if="!activeGroup" :description="t('config.noGroups')" />
         <el-tabs v-else v-model="activeTabId">
           <el-tab-pane
             v-for="tab in activeGroup.tabs.filter((item) => item.status === 1)"
@@ -136,7 +138,7 @@ onMounted(loadData)
             :name="String(tab.id)"
           >
             <el-form class="config-form" label-width="130px">
-              <el-empty v-if="tab.items.filter((item) => item.status === 1).length === 0" description="暂无配置项" />
+              <el-empty v-if="tab.items.filter((item) => item.status === 1).length === 0" :description="t('config.noItems')" />
               <el-form-item
                 v-for="item in tab.items.filter((config) => config.status === 1)"
                 :key="item.id"

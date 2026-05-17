@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { SystemConfigItem, UploadFileRow } from '../../../api/system'
 import FileSelector from '../../../components/FileSelector.vue'
 
@@ -15,6 +16,7 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
   'update:modelValue': [value: ConfigValue]
 }>()
+const { t } = useI18n()
 
 const selectorVisible = ref(false)
 const selectorType = ref<'image' | 'file'>('image')
@@ -80,7 +82,7 @@ function parseOptions(raw: string) {
       }))
     }
   } catch {
-    // 兼容每行 value,label 或 value|label 的轻量写法。
+    // Supports lightweight value,label or value|label rows.
   }
 
   return raw
@@ -219,8 +221,8 @@ function handleSelected(files: UploadFileRow[]) {
       v-model="arrayValue"
       type="daterange"
       value-format="YYYY-MM-DD"
-      start-placeholder="开始日期"
-      end-placeholder="结束日期"
+      :start-placeholder="t('config.startDate')"
+      :end-placeholder="t('config.endDate')"
       :disabled="disabled"
     />
     <el-date-picker
@@ -235,8 +237,8 @@ function handleSelected(files: UploadFileRow[]) {
       v-model="arrayValue"
       type="datetimerange"
       value-format="YYYY-MM-DD HH:mm:ss"
-      start-placeholder="开始时间"
-      end-placeholder="结束时间"
+      :start-placeholder="t('config.startTime')"
+      :end-placeholder="t('config.endTime')"
       :disabled="disabled"
     />
     <el-time-picker
@@ -250,8 +252,8 @@ function handleSelected(files: UploadFileRow[]) {
       v-model="arrayValue"
       is-range
       value-format="HH:mm:ss"
-      start-placeholder="开始时间"
-      end-placeholder="结束时间"
+      :start-placeholder="t('config.startTime')"
+      :end-placeholder="t('config.endTime')"
       :disabled="disabled"
     />
     <el-slider
@@ -267,9 +269,9 @@ function handleSelected(files: UploadFileRow[]) {
       :disabled="disabled"
     />
     <template v-else-if="item.type === 'image'">
-      <el-input v-model="value" :disabled="disabled" placeholder="请选择图片">
+      <el-input v-model="value" :disabled="disabled" :placeholder="t('config.selectImage')">
         <template #append>
-          <el-button :disabled="disabled" @click="openSelector('image', false)">选择</el-button>
+          <el-button :disabled="disabled" @click="openSelector('image', false)">{{ t('config.select') }}</el-button>
         </template>
       </el-input>
       <el-image v-if="value" class="config-image" :src="fileUrl(String(value))" fit="contain" />
@@ -284,12 +286,12 @@ function handleSelected(files: UploadFileRow[]) {
           fit="contain"
         />
       </div>
-      <el-button :disabled="disabled" @click="openSelector('image', true)">选择多图</el-button>
+      <el-button :disabled="disabled" @click="openSelector('image', true)">{{ t('config.selectMultipleImages') }}</el-button>
     </template>
     <template v-else-if="item.type === 'file'">
-      <el-input v-model="value" :disabled="disabled" placeholder="请选择文件">
+      <el-input v-model="value" :disabled="disabled" :placeholder="t('file.selectFileRequired')">
         <template #append>
-          <el-button :disabled="disabled" @click="openSelector('file', false)">选择</el-button>
+          <el-button :disabled="disabled" @click="openSelector('file', false)">{{ t('config.select') }}</el-button>
         </template>
       </el-input>
     </template>
@@ -298,7 +300,7 @@ function handleSelected(files: UploadFileRow[]) {
         {{ url }}
       </el-tag>
       <div>
-        <el-button :disabled="disabled" @click="openSelector('file', true)">选择多文件</el-button>
+        <el-button :disabled="disabled" @click="openSelector('file', true)">{{ t('config.selectMultipleFiles') }}</el-button>
       </div>
     </template>
     <el-input v-else v-model="value" :disabled="disabled" clearable />

@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { ElMessage, type FormInstance, type FormRules, type UploadRequestOptions } from 'element-plus'
 import { changePasswordApi, updateAvatarApi, updateProfileApi } from '../../api/auth'
 import { fetchRecentNotices, readAllNotices, readNotice, type AdminNoticeRow } from '../../api/system'
@@ -8,6 +9,7 @@ import { useAuthStore } from '../../stores/auth'
 
 const authStore = useAuthStore()
 const router = useRouter()
+const { t } = useI18n()
 const profileFormRef = ref<FormInstance>()
 const passwordFormRef = ref<FormInstance>()
 const savingProfile = ref(false)
@@ -27,15 +29,15 @@ const passwordForm = reactive({
   new_password: '',
   confirm_password: '',
 })
-const profileRules: FormRules = {
-  nickname: [{ required: true, message: '请输入昵称', trigger: 'blur' }],
-  email: [{ type: 'email', message: '邮箱格式不正确', trigger: 'blur' }],
-}
-const passwordRules: FormRules = {
-  old_password: [{ required: true, message: '请输入原密码', trigger: 'blur' }],
-  new_password: [{ required: true, min: 6, message: '新密码至少 6 位', trigger: 'blur' }],
-  confirm_password: [{ required: true, message: '请再次输入新密码', trigger: 'blur' }],
-}
+const profileRules = computed<FormRules>(() => ({
+  nickname: [{ required: true, message: t('profile.nicknameRequired'), trigger: 'blur' }],
+  email: [{ type: 'email', message: t('profile.emailInvalid'), trigger: 'blur' }],
+}))
+const passwordRules = computed<FormRules>(() => ({
+  old_password: [{ required: true, message: t('profile.passwordRequired'), trigger: 'blur' }],
+  new_password: [{ required: true, min: 6, message: t('profile.newPasswordMin'), trigger: 'blur' }],
+  confirm_password: [{ required: true, message: t('profile.passwordConfirmRequired'), trigger: 'blur' }],
+}))
 const backendOrigin = import.meta.env.DEV ? 'http://127.0.0.1:8000' : ''
 
 function avatarUrl(url = '') {
@@ -53,7 +55,7 @@ async function submitProfile() {
   try {
     const user = await updateProfileApi(profileForm)
     authStore.setUser(user)
-    ElMessage.success('资料已保存')
+    ElMessage.success(t('profile.saved'))
   } finally {
     savingProfile.value = false
   }
@@ -71,7 +73,7 @@ async function submitPassword() {
       confirm_password: '',
     })
     passwordFormRef.value?.clearValidate()
-    ElMessage.success('密码已修改，请重新登录')
+    ElMessage.success(t('profile.passwordChanged'))
     await authStore.logout()
     router.push('/login')
   } finally {
@@ -87,10 +89,10 @@ async function handleAvatarUpload(options: UploadRequestOptions) {
   try {
     const user = await updateAvatarApi(data)
     authStore.setUser(user)
-    ElMessage.success('头像已更新')
+    ElMessage.success(t('profile.avatarUpdated'))
     options.onSuccess({})
   } catch (error) {
-    options.onError(Object.assign(error instanceof Error ? error : new Error('上传失败'), {
+    options.onError(Object.assign(error instanceof Error ? error : new Error(t('profile.uploadFailed')), {
       status: 0,
       method: 'POST',
       url: '',
@@ -131,7 +133,7 @@ onMounted(() => {
   <div class="profile-page">
     <el-card class="page-card profile-card" shadow="never">
       <template #header>
-        <div class="page-title">个人中心</div>
+        <div class="page-title">{{ t('common.profile') }}</div>
       </template>
 
       <div class="profile-summary">
@@ -148,62 +150,62 @@ onMounted(() => {
           <div class="avatar-upload-info">
             <div class="profile-name">{{ authStore.user?.nickname || authStore.user?.username }}</div>
             <div class="profile-meta">{{ authStore.user?.username }}</div>
-            <el-button link type="primary" :loading="uploading">更换头像</el-button>
+            <el-button link type="primary" :loading="uploading">{{ t('profile.changeAvatar') }}</el-button>
           </div>
         </el-upload>
       </div>
 
       <el-tabs>
-        <el-tab-pane label="基本资料">
+        <el-tab-pane :label="t('profile.info')">
           <el-form ref="profileFormRef" class="profile-form" :model="profileForm" :rules="profileRules" label-width="90px">
-            <el-form-item label="昵称" prop="nickname">
+            <el-form-item :label="t('profile.nickname')" prop="nickname">
               <el-input v-model="profileForm.nickname" maxlength="50" />
             </el-form-item>
-            <el-form-item label="手机号">
+            <el-form-item :label="t('profile.mobile')">
               <el-input v-model="profileForm.mobile" maxlength="20" />
             </el-form-item>
-            <el-form-item label="邮箱" prop="email">
+            <el-form-item :label="t('profile.email')" prop="email">
               <el-input v-model="profileForm.email" maxlength="100" />
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" :loading="savingProfile" @click="submitProfile">保存资料</el-button>
+              <el-button type="primary" :loading="savingProfile" @click="submitProfile">{{ t('profile.saveProfile') }}</el-button>
             </el-form-item>
           </el-form>
         </el-tab-pane>
 
-        <el-tab-pane label="修改密码">
+        <el-tab-pane :label="t('profile.changePassword')">
           <el-form ref="passwordFormRef" class="profile-form" :model="passwordForm" :rules="passwordRules" label-width="90px">
-            <el-form-item label="原密码" prop="old_password">
+            <el-form-item :label="t('profile.currentPassword')" prop="old_password">
               <el-input v-model="passwordForm.old_password" type="password" show-password />
             </el-form-item>
-            <el-form-item label="新密码" prop="new_password">
+            <el-form-item :label="t('profile.newPassword')" prop="new_password">
               <el-input v-model="passwordForm.new_password" type="password" show-password />
             </el-form-item>
-            <el-form-item label="确认密码" prop="confirm_password">
+            <el-form-item :label="t('profile.confirmPassword')" prop="confirm_password">
               <el-input v-model="passwordForm.confirm_password" type="password" show-password />
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" :loading="savingPassword" @click="submitPassword">修改密码</el-button>
+              <el-button type="primary" :loading="savingPassword" @click="submitPassword">{{ t('profile.changePassword') }}</el-button>
             </el-form-item>
           </el-form>
         </el-tab-pane>
 
-        <el-tab-pane :label="`我的消息${unreadCount > 0 ? `（${unreadCount}）` : ''}`">
+        <el-tab-pane :label="`${t('profile.messages')}${unreadCount > 0 ? `（${unreadCount}）` : ''}`">
           <div class="notice-toolbar">
-            <span>最近消息</span>
-            <el-button v-if="unreadCount > 0" link type="primary" @click="markAllNoticesRead">全部已读</el-button>
+            <span>{{ t('profile.recentMessages') }}</span>
+            <el-button v-if="unreadCount > 0" link type="primary" @click="markAllNoticesRead">{{ t('common.allRead') }}</el-button>
           </div>
           <div v-loading="noticeLoading" class="profile-notices">
-            <el-empty v-if="notices.length === 0" description="暂无消息" />
+            <el-empty v-if="notices.length === 0" :description="t('common.noMessage')" />
             <div v-for="notice in notices" v-else :key="notice.id" class="profile-notice-item">
               <div class="profile-notice-title">
-                <el-tag :type="notice.type || 'info'" size="small">{{ notice.read === 0 ? '未读' : '已读' }}</el-tag>
+                <el-tag :type="notice.type || 'info'" size="small">{{ notice.read === 0 ? t('common.unread') : t('common.read') }}</el-tag>
                 <span>{{ notice.title }}</span>
               </div>
               <div class="profile-notice-content">{{ notice.content }}</div>
               <div class="profile-notice-footer">
                 <span>{{ notice.create_time }}</span>
-                <el-button v-if="notice.read === 0" link type="primary" @click="markNoticeRead(notice)">标记已读</el-button>
+                <el-button v-if="notice.read === 0" link type="primary" @click="markNoticeRead(notice)">{{ t('common.markRead') }}</el-button>
               </div>
             </div>
           </div>

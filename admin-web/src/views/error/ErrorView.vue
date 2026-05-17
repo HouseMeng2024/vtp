@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const status = computed(() => String(route.meta.status || '404'))
-const title = computed(() => status.value === '403' ? '无权限访问' : '页面不存在')
+const title = computed(() => status.value === '403' ? t('error.forbidden') : t('error.notFound'))
 const description = computed(() => status.value === '403'
-  ? '当前账号没有访问该页面或操作的权限。'
-  : '访问的页面不存在，或已经被移动。')
+  ? t('error.forbiddenDescription')
+  : t('error.notFoundDescription'))
 
 function goHome() {
   router.push('/dashboard')
@@ -25,8 +27,8 @@ function goBack() {
     <h1>{{ title }}</h1>
     <p>{{ description }}</p>
     <el-space>
-      <el-button type="primary" @click="goHome">返回控制台</el-button>
-      <el-button @click="goBack">返回上一页</el-button>
+      <el-button type="primary" @click="goHome">{{ t('error.goHome') }}</el-button>
+      <el-button @click="goBack">{{ t('error.goBack') }}</el-button>
     </el-space>
   </div>
 </template>

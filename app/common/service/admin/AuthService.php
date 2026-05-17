@@ -34,13 +34,13 @@ class AuthService
 
         if (!$user || !password_verify($password, (string) $user->getData('password'))) {
             $this->increaseLoginFailure($username, $request);
-            $this->recordLoginLog($request, 0, $username, 0, '账号或密码错误');
-            throw new RuntimeException('账号或密码错误');
+            $this->recordLoginLog($request, 0, $username, 0, 'Invalid account or password');
+            throw new RuntimeException(\think\facade\Lang::get('admin.invalid_account_password'));
         }
 
         if ((int) $user->status !== 1) {
-            $this->recordLoginLog($request, 0, $username, (int) $user->id, '账号已被禁用');
-            throw new RuntimeException('账号已被禁用');
+            $this->recordLoginLog($request, 0, $username, (int) $user->id, 'Account is disabled');
+            throw new RuntimeException(\think\facade\Lang::get('admin.account_disabled'));
         }
 
         $user->save([
@@ -98,13 +98,13 @@ class AuthService
         $profile = Cache::get($this->getTokenKey($token));
 
         if (!$profile) {
-            throw new RuntimeException('登录已失效，请重新登录');
+            throw new RuntimeException(\think\facade\Lang::get('admin.session_expired'));
         }
 
         $user = AdminUser::find((int) ($profile['id'] ?? 0));
 
         if (!$user || (int) $user->status !== 1) {
-            throw new RuntimeException('登录已失效，请重新登录');
+            throw new RuntimeException(\think\facade\Lang::get('admin.session_expired'));
         }
 
         return $this->formatProfile($user->toArray());
@@ -152,11 +152,11 @@ class AuthService
         $email = trim((string) ($data['email'] ?? ''));
 
         if ($nickname === '') {
-            throw new RuntimeException('请输入昵称');
+            throw new RuntimeException(\think\facade\Lang::get('admin.nickname_required'));
         }
 
         if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            throw new RuntimeException('邮箱格式不正确');
+            throw new RuntimeException(\think\facade\Lang::get('admin.invalid_email'));
         }
 
         $user->save([
@@ -179,19 +179,19 @@ class AuthService
         $confirmPassword = (string) ($data['confirm_password'] ?? '');
 
         if (!password_verify($oldPassword, (string) $user->getData('password'))) {
-            throw new RuntimeException('原密码不正确');
+            throw new RuntimeException(\think\facade\Lang::get('admin.current_password_incorrect'));
         }
 
         if ($newPassword !== $confirmPassword) {
-            throw new RuntimeException('两次输入的新密码不一致');
+            throw new RuntimeException(\think\facade\Lang::get('admin.password_confirm_mismatch'));
         }
 
         if (strlen($newPassword) < $this->passwordMinLength()) {
-            throw new RuntimeException('新密码长度不足');
+            throw new RuntimeException(\think\facade\Lang::get('admin.new_password_short'));
         }
 
         if (password_verify($newPassword, (string) $user->getData('password'))) {
-            throw new RuntimeException('新密码不能和原密码相同');
+            throw new RuntimeException(\think\facade\Lang::get('admin.new_password_same'));
         }
 
         $user->save(['password' => password_hash($newPassword, PASSWORD_BCRYPT)]);
@@ -230,7 +230,7 @@ class AuthService
         $user = AdminUser::find($userId);
 
         if (!$user) {
-            throw new RuntimeException('管理员不存在');
+            throw new RuntimeException(\think\facade\Lang::get('admin.admin_not_found'));
         }
 
         return $user;
@@ -288,7 +288,7 @@ class AuthService
         }
 
         if ($key === '' || trim($code) === '') {
-            throw new RuntimeException('请输入验证码');
+            throw new RuntimeException(\think\facade\Lang::get('admin.captcha_required'));
         }
 
         $cacheKey = $this->captchaPrefix . $key;
@@ -296,7 +296,7 @@ class AuthService
         Cache::delete($cacheKey);
 
         if (!$answer || trim($code) !== (string) $answer) {
-            throw new RuntimeException('验证码错误');
+            throw new RuntimeException(\think\facade\Lang::get('admin.invalid_captcha'));
         }
     }
 
@@ -335,7 +335,7 @@ class AuthService
         $lockedUntil = (int) ($state['locked_until'] ?? 0);
 
         if ($lockedUntil > time()) {
-            throw new RuntimeException('登录失败次数过多，请稍后再试');
+            throw new RuntimeException(\think\facade\Lang::get('admin.too_many_login_attempts'));
         }
     }
 

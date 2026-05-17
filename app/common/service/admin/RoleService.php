@@ -32,7 +32,7 @@ class RoleService
         $payload = $this->filterPayload($data);
 
         if (AdminRole::where('code', $payload['code'])->find()) {
-            throw new RuntimeException('角色标识已存在');
+            throw new RuntimeException(\think\facade\Lang::get('admin.role_key_exists'));
         }
 
         $role = AdminRole::create($payload);
@@ -53,7 +53,7 @@ class RoleService
             ->find();
 
         if ($exists) {
-            throw new RuntimeException('角色标识已存在');
+            throw new RuntimeException(\think\facade\Lang::get('admin.role_key_exists'));
         }
 
         $role->save($payload);
@@ -80,7 +80,7 @@ class RoleService
         $ids = $this->filterIds($ids);
 
         if (!$ids) {
-            throw new RuntimeException('请选择角色');
+            throw new RuntimeException(\think\facade\Lang::get('admin.select_roles'));
         }
 
         AdminRole::whereIn('id', $ids)->update(['status' => $status === 1 ? 1 : 0]);
@@ -92,11 +92,11 @@ class RoleService
     public function delete(int $id): void
     {
         if ($id === 1) {
-            throw new RuntimeException('默认超级管理员角色不能删除');
+            throw new RuntimeException(\think\facade\Lang::get('admin.default_super_admin_role_delete_forbidden'));
         }
 
         if (AdminUserRole::where('role_id', $id)->find()) {
-            throw new RuntimeException('角色已绑定管理员，不能删除');
+            throw new RuntimeException(\think\facade\Lang::get('admin.role_assigned'));
         }
 
         $role = $this->findRole($id);
@@ -112,15 +112,15 @@ class RoleService
         $ids = $this->filterIds($ids);
 
         if (!$ids) {
-            throw new RuntimeException('请选择角色');
+            throw new RuntimeException(\think\facade\Lang::get('admin.select_roles'));
         }
 
         if (in_array(1, $ids, true)) {
-            throw new RuntimeException('默认超级管理员角色不能删除');
+            throw new RuntimeException(\think\facade\Lang::get('admin.default_super_admin_role_delete_forbidden'));
         }
 
         if (AdminUserRole::whereIn('role_id', $ids)->find()) {
-            throw new RuntimeException('存在已绑定管理员的角色，不能删除');
+            throw new RuntimeException(\think\facade\Lang::get('admin.some_roles_assigned'));
         }
 
         foreach ($ids as $id) {
@@ -204,7 +204,7 @@ class RoleService
         $role = AdminRole::find($id);
 
         if (!$role) {
-            throw new RuntimeException('角色不存在');
+            throw new RuntimeException(\think\facade\Lang::get('admin.role_not_found'));
         }
 
         return $role;
@@ -219,15 +219,15 @@ class RoleService
         $code = trim((string) ($data['code'] ?? ''));
 
         if ($name === '') {
-            throw new RuntimeException('请输入角色名称');
+            throw new RuntimeException(\think\facade\Lang::get('admin.role_name_required'));
         }
 
         if ($code === '') {
-            throw new RuntimeException('请输入角色标识');
+            throw new RuntimeException(\think\facade\Lang::get('admin.role_key_required'));
         }
 
         if (!preg_match('/^[a-z][a-z0-9_]*$/', $code)) {
-            throw new RuntimeException('角色标识只能使用小写字母、数字、下划线，并以字母开头');
+            throw new RuntimeException(\think\facade\Lang::get('admin.role_key_invalid'));
         }
 
         $dataScope = trim((string) ($data['data_scope'] ?? 'all'));

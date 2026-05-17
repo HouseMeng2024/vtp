@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   clearSystemCache,
@@ -14,6 +15,7 @@ import {
 import { useAuthStore } from '../../../stores/auth'
 
 const authStore = useAuthStore()
+const { t } = useI18n()
 const loading = ref(false)
 const backupLoading = ref(false)
 const overview = ref<SystemToolOverview | null>(null)
@@ -40,13 +42,13 @@ function formatSize(size: number) {
 }
 
 async function handleClearCache() {
-  await ElMessageBox.prompt('确定清理系统缓存吗？请输入 CLEAR 确认。', '清理确认', {
+  await ElMessageBox.prompt(t('tool.clearCacheConfirm'), t('common.clearConfirmation'), {
     inputPattern: /^CLEAR$/,
-    inputErrorMessage: '请输入 CLEAR',
+    inputErrorMessage: t('log.enterClear'),
     type: 'warning',
   })
   await clearSystemCache()
-  ElMessage.success('缓存已清理')
+  ElMessage.success(t('tool.cacheCleared'))
   loadData()
 }
 
@@ -54,7 +56,7 @@ async function handleCreateBackup() {
   backupLoading.value = true
   try {
     await createDatabaseBackup()
-    ElMessage.success('数据库备份已创建')
+    ElMessage.success(t('tool.databaseBackupCreated'))
     loadData()
   } finally {
     backupLoading.value = false
@@ -62,13 +64,13 @@ async function handleCreateBackup() {
 }
 
 async function handleRestore(row: SystemToolBackup) {
-  await ElMessageBox.prompt(`确定使用「${row.name}」恢复当前数据库吗？请输入 RESTORE 确认。`, '恢复确认', {
+  await ElMessageBox.prompt(t('tool.restoreConfirm', { name: row.name }), t('tool.restoreConfirmation'), {
     inputPattern: /^RESTORE$/,
-    inputErrorMessage: '请输入 RESTORE',
+    inputErrorMessage: t('tool.enterRestore'),
     type: 'warning',
   })
   await restoreDatabaseBackup(row.name)
-  ElMessage.success('数据库已恢复')
+  ElMessage.success(t('tool.databaseRestored'))
   loadData()
 }
 
@@ -83,11 +85,11 @@ async function handleDownload(row: SystemToolBackup) {
 }
 
 async function handleDelete(row: SystemToolBackup) {
-  await ElMessageBox.confirm(`确定删除备份「${row.name}」吗？`, '删除确认', {
+  await ElMessageBox.confirm(t('tool.deleteBackupConfirm', { name: row.name }), t('common.deleteConfirmation'), {
     type: 'warning',
   })
   await deleteDatabaseBackup(row.name)
-  ElMessage.success('备份已删除')
+  ElMessage.success(t('tool.backupDeleted'))
   loadData()
 }
 
@@ -99,46 +101,46 @@ onMounted(loadData)
     <el-card class="page-card" shadow="never">
       <template #header>
         <div class="page-toolbar">
-          <div class="page-title">缓存管理</div>
+          <div class="page-title">{{ t('tool.cacheManagement') }}</div>
           <el-button
             v-if="authStore.hasPermission('admin:tool:cache-clear')"
             type="primary"
             @click="handleClearCache"
           >
-            清理缓存
+            {{ t('tool.clearCache') }}
           </el-button>
         </div>
       </template>
 
       <el-descriptions :column="1" border>
-        <el-descriptions-item label="缓存驱动">{{ overview?.cache.driver || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="缓存目录">{{ overview?.cache.path || '-' }}</el-descriptions-item>
+        <el-descriptions-item :label="t('tool.cacheDriver')">{{ overview?.cache.driver || '-' }}</el-descriptions-item>
+        <el-descriptions-item :label="t('tool.cachePath')">{{ overview?.cache.path || '-' }}</el-descriptions-item>
       </el-descriptions>
     </el-card>
 
     <el-card class="page-card table-page-card backup-card" shadow="never">
       <template #header>
         <div class="page-toolbar">
-          <div class="page-title">数据库备份</div>
+          <div class="page-title">{{ t('tool.databaseBackups') }}</div>
           <el-button
             v-if="authStore.hasPermission('admin:tool:backup-create')"
             type="primary"
             :loading="backupLoading"
             @click="handleCreateBackup"
           >
-            创建备份
+            {{ t('tool.createBackup') }}
           </el-button>
         </div>
       </template>
 
       <div class="table-scroll">
         <el-table :data="overview?.backups || []" border height="100%">
-          <el-table-column prop="name" label="备份文件" min-width="240" />
-          <el-table-column label="大小" width="120">
+          <el-table-column prop="name" :label="t('tool.backupFile')" min-width="240" />
+          <el-table-column :label="t('tool.size')" width="120">
             <template #default="{ row }">{{ formatSize(row.size) }}</template>
           </el-table-column>
-          <el-table-column prop="create_time" label="创建时间" min-width="170" />
-          <el-table-column label="操作" width="210" fixed="right">
+          <el-table-column prop="create_time" :label="t('common.createTime')" min-width="170" />
+          <el-table-column :label="t('common.actions')" width="210" fixed="right">
             <template #default="{ row }">
               <el-space class="table-actions">
                 <el-button
@@ -147,7 +149,7 @@ onMounted(loadData)
                   type="primary"
                   @click="handleDownload(row)"
                 >
-                  下载
+                  {{ t('tool.download') }}
                 </el-button>
                 <el-button
                   v-if="authStore.hasPermission('admin:tool:backup-restore')"
@@ -155,7 +157,7 @@ onMounted(loadData)
                   type="primary"
                   @click="handleRestore(row)"
                 >
-                  恢复
+                  {{ t('tool.restore') }}
                 </el-button>
                 <el-button
                   v-if="authStore.hasPermission('admin:tool:backup-delete')"
@@ -163,7 +165,7 @@ onMounted(loadData)
                   type="danger"
                   @click="handleDelete(row)"
                 >
-                  删除
+                  {{ t('common.delete') }}
                 </el-button>
               </el-space>
             </template>

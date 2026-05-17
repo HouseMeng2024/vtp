@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { fetchSiteConfig } from '../api/system'
+import { defaultLocale, getStoredLocale, setI18nLocale, type AppLocale } from '../plugins/i18n'
 
 export interface VisitedView {
   path: string
@@ -46,7 +47,7 @@ const defaultProjectConfig: ProjectConfig = {
 const defaultSiteConfig: SiteConfig = {
   adminTitle: 'VTP Admin',
   siteLogo: '',
-  siteDescription: '通用后台管理系统',
+  siteDescription: 'General admin system',
 }
 
 function loadProjectConfig(): ProjectConfig {
@@ -86,11 +87,16 @@ function loadCachedSiteConfig(): SiteConfig {
 export const useAppStore = defineStore('app', {
   state: () => ({
     sidebarCollapsed: false,
-    visitedViews: [{ path: '/dashboard', title: '控制台' }] as VisitedView[],
+    locale: getStoredLocale(),
+    visitedViews: [{ path: '/dashboard', title: 'Dashboard' }] as VisitedView[],
     projectConfig: loadProjectConfig(),
     siteConfig: loadCachedSiteConfig(),
   }),
   actions: {
+    setLocale(locale: AppLocale) {
+      this.locale = locale || defaultLocale
+      setI18nLocale(this.locale)
+    },
     toggleSidebar() {
       this.sidebarCollapsed = !this.sidebarCollapsed
     },

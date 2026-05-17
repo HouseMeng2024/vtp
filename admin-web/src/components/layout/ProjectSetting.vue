@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { LayoutMode, ProjectConfig } from '../../stores/app'
 import { useAppStore } from '../../stores/app'
 
@@ -13,12 +15,13 @@ const emit = defineEmits<{
 }>()
 
 const appStore = useAppStore()
+const { t } = useI18n()
 const themeColors = ['#409eff', '#1f75cb', '#00a870', '#e6a23c', '#f56c6c', '#7c3aed']
-const layoutModes: Array<{ label: string; value: LayoutMode }> = [
-  { label: '左侧菜单', value: 'side' },
-  { label: '顶部菜单', value: 'top' },
-  { label: '混合菜单', value: 'mix' },
-]
+const layoutModes = computed<Array<{ label: string; value: LayoutMode }>>(() => [
+  { label: t('projectSetting.sideMenu'), value: 'side' },
+  { label: t('projectSetting.topMenu'), value: 'top' },
+  { label: t('projectSetting.mixedMenu'), value: 'mix' },
+])
 
 function setBooleanConfig(key: BooleanProjectConfigKey, value: string | number | boolean) {
   appStore.setProjectConfig({
@@ -30,14 +33,14 @@ function setBooleanConfig(key: BooleanProjectConfigKey, value: string | number |
 <template>
   <el-drawer
     :model-value="modelValue"
-    title="项目配置"
+    :title="t('common.projectSetting')"
     size="320px"
     class="project-drawer"
     @update:model-value="emit('update:modelValue', $event)"
   >
     <div class="setting-body">
       <div class="setting-section">
-        <div class="setting-title">菜单布局</div>
+        <div class="setting-title">{{ t('projectSetting.menuLayout') }}</div>
         <div class="layout-previews">
           <button
             v-for="layout in layoutModes"
@@ -56,7 +59,7 @@ function setBooleanConfig(key: BooleanProjectConfigKey, value: string | number |
       </div>
 
       <div class="setting-section">
-        <div class="setting-title">系统主题</div>
+        <div class="setting-title">{{ t('projectSetting.systemTheme') }}</div>
         <div class="theme-swatches">
           <button
             v-for="color in themeColors"
@@ -71,30 +74,30 @@ function setBooleanConfig(key: BooleanProjectConfigKey, value: string | number |
       </div>
 
       <div class="setting-section">
-        <div class="setting-title">界面显示</div>
+        <div class="setting-title">{{ t('projectSetting.displaySettings') }}</div>
         <div class="setting-row">
-          <span>深色模式</span>
+          <span>{{ t('projectSetting.darkMode') }}</span>
           <el-switch
             :model-value="appStore.projectConfig.darkMode"
             @change="setBooleanConfig('darkMode', $event)"
           />
         </div>
         <div class="setting-row">
-          <span>灰色模式</span>
+          <span>{{ t('projectSetting.grayMode') }}</span>
           <el-switch
             :model-value="appStore.projectConfig.grayMode"
             @change="setBooleanConfig('grayMode', $event)"
           />
         </div>
         <div class="setting-row">
-          <span>色弱模式</span>
+          <span>{{ t('projectSetting.weakMode') }}</span>
           <el-switch
             :model-value="appStore.projectConfig.weakMode"
             @change="setBooleanConfig('weakMode', $event)"
           />
         </div>
         <div class="setting-row">
-          <span>紧凑模式</span>
+          <span>{{ t('projectSetting.compactMode') }}</span>
           <el-switch
             :model-value="appStore.projectConfig.compactMode"
             @change="setBooleanConfig('compactMode', $event)"
@@ -103,34 +106,34 @@ function setBooleanConfig(key: BooleanProjectConfigKey, value: string | number |
       </div>
 
       <div class="setting-section">
-        <div class="setting-title">导航配置</div>
+        <div class="setting-title">{{ t('projectSetting.navigation') }}</div>
         <div class="setting-row">
-          <span>折叠菜单</span>
+          <span>{{ t('projectSetting.collapseMenu') }}</span>
           <el-switch v-model="appStore.sidebarCollapsed" />
         </div>
         <div class="setting-row">
-          <span>固定头部</span>
+          <span>{{ t('projectSetting.fixedHeader') }}</span>
           <el-switch
             :model-value="appStore.projectConfig.fixedHeader"
             @change="setBooleanConfig('fixedHeader', $event)"
           />
         </div>
         <div class="setting-row">
-          <span>显示 Logo</span>
+          <span>{{ t('projectSetting.showLogo') }}</span>
           <el-switch
             :model-value="appStore.projectConfig.showLogo"
             @change="setBooleanConfig('showLogo', $event)"
           />
         </div>
         <div class="setting-row">
-          <span>显示标签页</span>
+          <span>{{ t('projectSetting.showTags') }}</span>
           <el-switch
             :model-value="appStore.projectConfig.showTags"
             @change="setBooleanConfig('showTags', $event)"
           />
         </div>
         <div class="setting-row">
-          <span>显示面包屑</span>
+          <span>{{ t('projectSetting.showBreadcrumb') }}</span>
           <el-switch
             :model-value="appStore.projectConfig.showBreadcrumb"
             @change="setBooleanConfig('showBreadcrumb', $event)"
@@ -140,15 +143,15 @@ function setBooleanConfig(key: BooleanProjectConfigKey, value: string | number |
 
       <div class="setting-section">
         <div class="setting-row">
-          <span>布局风格</span>
-          <el-tag effect="plain">经典侧边栏</el-tag>
+          <span>{{ t('projectSetting.layoutStyle') }}</span>
+          <el-tag effect="plain">{{ t('projectSetting.classicSidebar') }}</el-tag>
         </div>
       </div>
     </div>
 
     <template #footer>
       <div class="setting-footer">
-        <el-button class="reset-btn" @click="appStore.resetProjectConfig()">恢复默认配置</el-button>
+        <el-button class="reset-btn" @click="appStore.resetProjectConfig()">{{ t('common.restoreDefaults') }}</el-button>
       </div>
     </template>
   </el-drawer>

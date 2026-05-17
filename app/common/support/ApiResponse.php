@@ -3,6 +3,7 @@ declare (strict_types = 1);
 
 namespace app\common\support;
 
+use think\facade\Lang;
 use think\Response;
 
 class ApiResponse
@@ -34,16 +35,20 @@ class ApiResponse
     /**
      * 返回未登录 JSON 响应。
      */
-    public static function unauthorized(string $message = '请先登录'): Response
+    public static function unauthorized(string $message = ''): Response
     {
+        $message = $message !== '' ? $message : Lang::get('auth.required');
+
         return self::fail($message, 401)->code(401);
     }
 
     /**
      * 返回无权限 JSON 响应。
      */
-    public static function forbidden(string $message = '无权限访问'): Response
+    public static function forbidden(string $message = ''): Response
     {
+        $message = $message !== '' ? $message : Lang::get('auth.forbidden');
+
         return self::fail($message, 403)->code(403);
     }
 }

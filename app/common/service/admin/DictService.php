@@ -45,7 +45,7 @@ class DictService
         $payload = $this->filterTypePayload($data);
 
         if (DictType::where('type', $payload['type'])->find()) {
-            throw new RuntimeException('字典标识已存在');
+            throw new RuntimeException(\think\facade\Lang::get('admin.dict_key_exists'));
         }
 
         return DictType::create($payload)->toArray();
@@ -60,7 +60,7 @@ class DictService
         $payload = $this->filterTypePayload($data);
 
         if (DictType::where('type', $payload['type'])->where('id', '<>', $id)->find()) {
-            throw new RuntimeException('字典标识已存在');
+            throw new RuntimeException(\think\facade\Lang::get('admin.dict_key_exists'));
         }
 
         $type->save($payload);
@@ -163,7 +163,7 @@ class DictService
         $payload = $this->filterDataPayload($data);
 
         if (DictData::where('type_id', $payload['type_id'])->where('value', $payload['value'])->find()) {
-            throw new RuntimeException('字典值已存在');
+            throw new RuntimeException(\think\facade\Lang::get('admin.dict_value_exists'));
         }
 
         return DictData::create($payload)->toArray();
@@ -181,7 +181,7 @@ class DictService
             ->where('value', $payload['value'])
             ->where('id', '<>', $id)
             ->find()) {
-            throw new RuntimeException('字典值已存在');
+            throw new RuntimeException(\think\facade\Lang::get('admin.dict_value_exists'));
         }
 
         $dictData->save($payload);
@@ -216,7 +216,7 @@ class DictService
         $type = DictType::find($id);
 
         if (!$type) {
-            throw new RuntimeException('字典类型不存在');
+            throw new RuntimeException(\think\facade\Lang::get('admin.dict_type_not_found'));
         }
 
         return $type;
@@ -230,7 +230,7 @@ class DictService
         $data = DictData::find($id);
 
         if (!$data) {
-            throw new RuntimeException('字典项不存在');
+            throw new RuntimeException(\think\facade\Lang::get('admin.dict_item_not_found'));
         }
 
         return $data;
@@ -245,15 +245,15 @@ class DictService
         $type = trim((string) ($data['type'] ?? ''));
 
         if ($name === '') {
-            throw new RuntimeException('请输入字典名称');
+            throw new RuntimeException(\think\facade\Lang::get('admin.dict_name_required'));
         }
 
         if ($type === '') {
-            throw new RuntimeException('请输入字典标识');
+            throw new RuntimeException(\think\facade\Lang::get('admin.dict_key_required'));
         }
 
         if (!preg_match('/^[a-z][a-z0-9_]*$/', $type)) {
-            throw new RuntimeException('字典标识只能使用小写字母、数字、下划线，并以字母开头');
+            throw new RuntimeException(\think\facade\Lang::get('admin.dict_key_invalid'));
         }
 
         return [
@@ -277,11 +277,11 @@ class DictService
         $this->findType($typeId);
 
         if ($label === '') {
-            throw new RuntimeException('请输入字典标签');
+            throw new RuntimeException(\think\facade\Lang::get('admin.dict_label_required'));
         }
 
         if ($value === '') {
-            throw new RuntimeException('请输入字典值');
+            throw new RuntimeException(\think\facade\Lang::get('admin.dict_value_required'));
         }
 
         return [

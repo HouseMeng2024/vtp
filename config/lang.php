@@ -5,11 +5,11 @@
 
 return [
     // 默认语言
-    'default_lang'        => env('DEFAULT_LANG', 'zh-cn'),
+    'default_lang'        => env('DEFAULT_LANG', 'en-us'),
     // 自动侦测浏览器语言
-    'auto_detect_browser' => true,
+    'auto_detect_browser' => false,
     // 允许的语言列表
-    'allow_lang_list'     => [],
+    'allow_lang_list'     => ['en-us', 'zh-cn'],
     // 多语言自动侦测变量名
     'detect_var'          => 'lang',
     // 是否使用Cookie记录

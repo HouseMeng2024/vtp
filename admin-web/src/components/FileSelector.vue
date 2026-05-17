@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Document, Picture } from '@element-plus/icons-vue'
 import { ElMessage, type UploadRequestOptions } from 'element-plus'
 import {
@@ -26,6 +27,7 @@ const emit = defineEmits<{
   'update:modelValue': [value: boolean]
   select: [files: UploadFileRow[]]
 }>()
+const { t } = useI18n()
 const visible = computed({
   get: () => props.modelValue,
   set: (value) => emit('update:modelValue', value),
@@ -43,13 +45,13 @@ const query = reactive({
   scene: props.scene,
 })
 const backendOrigin = import.meta.env.DEV ? 'http://127.0.0.1:8000' : ''
-const categoryOptions = [
-  { label: '图片', value: 'image' },
-  { label: '文档', value: 'document' },
-  { label: '表格', value: 'sheet' },
-  { label: '压缩包', value: 'archive' },
-  { label: '其他', value: 'other' },
-]
+const categoryOptions = computed(() => [
+  { label: t('file.image'), value: 'image' },
+  { label: t('file.document'), value: 'document' },
+  { label: t('file.sheet'), value: 'sheet' },
+  { label: t('file.archive'), value: 'archive' },
+  { label: t('file.other'), value: 'other' },
+])
 const uploadAccept = computed(() => props.acceptType === 'image'
   ? '.jpg,.jpeg,.png,.gif,.webp,.svg'
   : '.jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.xls,.xlsx')
@@ -146,12 +148,12 @@ async function handleUpload(options: UploadRequestOptions) {
 
   try {
     const file = await uploadFile(data)
-    ElMessage.success('上传成功')
+    ElMessage.success(t('file.uploadSuccess'))
     options.onSuccess({})
     await loadData()
     selectedRows.value = props.multiple ? [...selectedRows.value, file] : [file]
   } catch (error) {
-    options.onError(Object.assign(error instanceof Error ? error : new Error('上传失败'), {
+    options.onError(Object.assign(error instanceof Error ? error : new Error(t('file.uploadFailed')), {
       status: 0,
       method: 'POST',
       url: '',
@@ -163,7 +165,7 @@ async function handleUpload(options: UploadRequestOptions) {
 
 function confirmSelect() {
   if (selectedRows.value.length === 0) {
-    ElMessage.warning('请选择文件')
+    ElMessage.warning(t('file.selectFileRequired'))
     return
   }
 
@@ -173,28 +175,28 @@ function confirmSelect() {
 </script>
 
 <template>
-  <el-dialog v-model="visible" :title="acceptType === 'image' ? '选择图片' : '选择文件'" width="860px">
+  <el-dialog v-model="visible" :title="acceptType === 'image' ? t('file.selectImage') : t('file.selectFile')" width="860px">
     <div class="selector-toolbar">
       <el-form inline @submit.prevent>
-        <el-form-item label="关键词">
-          <el-input v-model="query.keyword" clearable placeholder="文件名 / 路径" @keyup.enter="handleSearch" />
+        <el-form-item :label="t('common.keyword')">
+          <el-input v-model="query.keyword" clearable :placeholder="t('file.fileNamePath')" @keyup.enter="handleSearch" />
         </el-form-item>
-        <el-form-item v-if="acceptType !== 'image'" label="分类">
-          <el-select v-model="query.category" clearable placeholder="全部分类" style="width: 130px" @change="handleSearch">
+        <el-form-item v-if="acceptType !== 'image'" :label="t('file.category')">
+          <el-select v-model="query.category" clearable :placeholder="t('file.allCategories')" style="width: 130px" @change="handleSearch">
             <el-option v-for="item in categoryOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleSearch">查询</el-button>
+          <el-button type="primary" @click="handleSearch">{{ t('common.search') }}</el-button>
         </el-form-item>
       </el-form>
       <el-upload :show-file-list="false" :http-request="handleUpload" :accept="uploadAccept" :disabled="uploading">
-        <el-button type="primary" :loading="uploading">上传</el-button>
+        <el-button type="primary" :loading="uploading">{{ t('file.upload') }}</el-button>
       </el-upload>
     </div>
 
     <div v-loading="loading" class="selector-grid">
-      <el-empty v-if="!loading && rows.length === 0" description="暂无文件" />
+      <el-empty v-if="!loading && rows.length === 0" :description="t('file.noFiles')" />
       <button
         v-for="row in rows"
         :key="row.id"
@@ -229,8 +231,8 @@ function confirmSelect() {
     />
 
     <template #footer>
-      <el-button @click="visible = false">取消</el-button>
-      <el-button type="primary" @click="confirmSelect">确定</el-button>
+      <el-button @click="visible = false">{{ t('common.cancel') }}</el-button>
+      <el-button type="primary" @click="confirmSelect">{{ t('common.ok') }}</el-button>
     </template>
   </el-dialog>
 </template>

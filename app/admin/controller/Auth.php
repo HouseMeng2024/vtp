@@ -22,7 +22,7 @@ class Auth extends AdminBase
         $password = (string) ($data['password'] ?? '');
 
         if ($username === '' || $password === '') {
-            return ApiResponse::fail('请输入账号和密码');
+            return ApiResponse::fail(\think\facade\Lang::get('admin.account_password_required'));
         }
 
         try {

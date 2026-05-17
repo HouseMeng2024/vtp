@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { nextTick, onMounted, reactive, ref } from 'vue'
+import { computed, nextTick, onMounted, reactive, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import {
   batchDeleteRoles,
@@ -19,6 +20,7 @@ import { useAuthStore } from '../../../stores/auth'
 import type { AdminMenu } from '../../../types/auth'
 
 const authStore = useAuthStore()
+const { t } = useI18n()
 const loading = ref(false)
 const saving = ref(false)
 const permissionSaving = ref(false)
@@ -46,10 +48,10 @@ const form = reactive<AdminRolePayload>({
   data_scope: 'all',
   remark: '',
 })
-const rules: FormRules = {
-  name: [{ required: true, message: '请输入角色名称', trigger: 'blur' }],
-  code: [{ required: true, message: '请输入角色标识', trigger: 'blur' }],
-}
+const rules = computed<FormRules>(() => ({
+  name: [{ required: true, message: t('role.nameRequired'), trigger: 'blur' }],
+  code: [{ required: true, message: t('role.codeRequired'), trigger: 'blur' }],
+}))
 
 async function loadData() {
   loading.value = true
@@ -106,10 +108,10 @@ async function submitForm() {
   try {
     if (editingId.value) {
       await updateRole(editingId.value, form)
-      ElMessage.success('保存成功')
+      ElMessage.success(t('common.saved'))
     } else {
       await createRole(form)
-      ElMessage.success('创建成功')
+      ElMessage.success(t('common.created'))
     }
 
     dialogVisible.value = false
@@ -123,15 +125,15 @@ async function handleStatusChange(row: AdminRoleRow) {
   const nextStatus = row.status === 1 ? 0 : 1
   await updateRoleStatus(row.id, nextStatus)
   row.status = nextStatus
-  ElMessage.success('状态已更新')
+  ElMessage.success(t('common.statusUpdated'))
 }
 
 async function handleDelete(row: AdminRoleRow) {
-  await ElMessageBox.confirm(`确定删除角色「${row.name}」吗？`, '删除确认', {
+  await ElMessageBox.confirm(t('role.deleteConfirm', { name: row.name }), t('common.deleteConfirmation'), {
     type: 'warning',
   })
   await deleteRole(row.id)
-  ElMessage.success('删除成功')
+  ElMessage.success(t('configManage.deleted'))
   loadData()
 }
 
@@ -145,26 +147,26 @@ function handleSelectionChange(selection: AdminRoleRow[]) {
 
 async function handleBatchStatus(status: number) {
   if (selectedRows.value.length === 0) {
-    ElMessage.warning('请先选择角色')
+    ElMessage.warning(t('role.selectRolesFirst'))
     return
   }
 
   await batchUpdateRoleStatus(selectedIds(), status)
-  ElMessage.success('批量状态已更新')
+  ElMessage.success(t('common.bulkStatusUpdated'))
   loadData()
 }
 
 async function handleBatchDelete() {
   if (selectedRows.value.length === 0) {
-    ElMessage.warning('请先选择角色')
+    ElMessage.warning(t('role.selectRolesFirst'))
     return
   }
 
-  await ElMessageBox.confirm(`确定删除选中的 ${selectedRows.value.length} 个角色吗？`, '批量删除确认', {
+  await ElMessageBox.confirm(t('role.batchDeleteConfirm', { count: selectedRows.value.length }), t('log.bulkDeleteTitle'), {
     type: 'warning',
   })
   await batchDeleteRoles(selectedIds())
-  ElMessage.success('批量删除成功')
+  ElMessage.success(t('common.bulkDeleteSuccess'))
   loadData()
 }
 
@@ -193,7 +195,7 @@ async function submitPermission() {
     const halfChecked = menuTreeRef.value?.getHalfCheckedKeys() || []
     const menuIds = Array.from(new Set([...checked, ...halfChecked].map((id) => Number(id))))
     await updateRoleMenus(permissionRole.value.id, menuIds)
-    ElMessage.success('权限已保存')
+    ElMessage.success(t('common.saved'))
     permissionVisible.value = false
   } finally {
     permissionSaving.value = false
@@ -238,21 +240,21 @@ onMounted(loadData)
   <el-card class="page-card table-page-card" shadow="never">
     <template #header>
       <div class="page-toolbar">
-        <div class="page-title">角色管理</div>
+        <div class="page-title">{{ t('role.roleManagement') }}</div>
         <el-space>
           <el-button
             v-if="authStore.hasPermission('admin:role:status')"
             :disabled="selectedRows.length === 0"
             @click="handleBatchStatus(1)"
           >
-            批量启用
+            {{ t('common.bulkEnable') }}
           </el-button>
           <el-button
             v-if="authStore.hasPermission('admin:role:status')"
             :disabled="selectedRows.length === 0"
             @click="handleBatchStatus(0)"
           >
-            批量禁用
+            {{ t('common.bulkDisable') }}
           </el-button>
           <el-button
             v-if="authStore.hasPermission('admin:role:delete')"
@@ -260,19 +262,19 @@ onMounted(loadData)
             :disabled="selectedRows.length === 0"
             @click="handleBatchDelete"
           >
-            批量删除
+            {{ t('common.bulkDelete') }}
           </el-button>
-          <el-button v-if="authStore.hasPermission('admin:role:create')" type="primary" @click="openCreate">新增</el-button>
+          <el-button v-if="authStore.hasPermission('admin:role:create')" type="primary" @click="openCreate">{{ t('common.create') }}</el-button>
         </el-space>
       </div>
     </template>
 
     <el-form class="page-search" inline @submit.prevent>
-      <el-form-item label="关键词">
-        <el-input v-model="query.keyword" clearable placeholder="角色名称 / 标识" @keyup.enter="handleSearch" />
+      <el-form-item :label="t('common.keyword')">
+        <el-input v-model="query.keyword" clearable :placeholder="t('role.roleNameKey')" @keyup.enter="handleSearch" />
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="handleSearch">查询</el-button>
+        <el-button type="primary" @click="handleSearch">{{ t('common.search') }}</el-button>
       </el-form-item>
     </el-form>
 
@@ -280,34 +282,34 @@ onMounted(loadData)
       <el-table v-loading="loading" :data="rows" border height="100%" @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="48" />
         <el-table-column prop="id" label="ID" width="90" />
-        <el-table-column prop="name" label="角色名称" min-width="150" />
-        <el-table-column prop="code" label="角色标识" min-width="160" />
-        <el-table-column label="数据权限" width="120">
+        <el-table-column prop="name" :label="t('role.roleName')" min-width="150" />
+        <el-table-column prop="code" :label="t('role.roleKey')" min-width="160" />
+        <el-table-column :label="t('role.dataScope')" width="120">
           <template #default="{ row }">
             <el-tag :type="row.data_scope === 'all' ? 'primary' : 'warning'">
-              {{ row.data_scope === 'all' ? '全部数据' : '仅本人数据' }}
+              {{ row.data_scope === 'all' ? t('role.allData') : t('role.ownData') }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="sort" label="排序" width="100" />
-        <el-table-column label="状态" width="100">
+        <el-table-column prop="sort" :label="t('configManage.sort')" width="100" />
+        <el-table-column :label="t('common.status')" width="100">
           <template #default="{ row }">
             <el-tag :type="row.status === 1 ? 'success' : 'info'">
-              {{ row.status === 1 ? '正常' : '禁用' }}
+              {{ row.status === 1 ? t('common.enabled') : t('common.disabled') }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="remark" label="备注" min-width="180" />
-        <el-table-column prop="create_time" label="创建时间" min-width="170" />
-        <el-table-column label="操作" width="210" fixed="right">
+        <el-table-column prop="remark" :label="t('configManage.remark')" min-width="180" />
+        <el-table-column prop="create_time" :label="t('common.createTime')" min-width="170" />
+        <el-table-column :label="t('common.actions')" width="210" fixed="right">
           <template #default="{ row }">
             <el-space class="table-actions">
-              <el-button v-if="authStore.hasPermission('admin:role:update')" link type="primary" @click="openEdit(row)">编辑</el-button>
-              <el-button v-if="authStore.hasPermission('admin:role:permission')" link type="primary" @click="openPermission(row)">权限</el-button>
+              <el-button v-if="authStore.hasPermission('admin:role:update')" link type="primary" @click="openEdit(row)">{{ t('common.edit') }}</el-button>
+              <el-button v-if="authStore.hasPermission('admin:role:permission')" link type="primary" @click="openPermission(row)">{{ t('role.permissions') }}</el-button>
               <el-button v-if="authStore.hasPermission('admin:role:status')" link type="primary" @click="handleStatusChange(row)">
-                {{ row.status === 1 ? '禁用' : '启用' }}
+                {{ row.status === 1 ? t('common.disabled') : t('common.enable') }}
               </el-button>
-              <el-button v-if="authStore.hasPermission('admin:role:delete')" link type="danger" @click="handleDelete(row)">删除</el-button>
+              <el-button v-if="authStore.hasPermission('admin:role:delete')" link type="danger" @click="handleDelete(row)">{{ t('common.delete') }}</el-button>
             </el-space>
           </template>
         </el-table-column>
@@ -325,40 +327,40 @@ onMounted(loadData)
       @current-change="loadData"
     />
 
-    <el-dialog v-model="dialogVisible" :title="editingId ? '编辑角色' : '新增角色'" width="520px">
+    <el-dialog v-model="dialogVisible" :title="editingId ? t('role.editRole') : t('role.createRole')" width="520px">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="90px">
-        <el-form-item label="角色名称" prop="name">
+        <el-form-item :label="t('role.roleName')" prop="name">
           <el-input v-model="form.name" maxlength="50" />
         </el-form-item>
-        <el-form-item label="角色标识" prop="code">
-          <el-input v-model="form.code" maxlength="50" placeholder="如 editor" />
+        <el-form-item :label="t('role.roleKey')" prop="code">
+          <el-input v-model="form.code" maxlength="50" placeholder="e.g. editor" />
         </el-form-item>
-        <el-form-item label="排序">
+        <el-form-item :label="t('configManage.sort')">
           <el-input-number v-model="form.sort" :min="0" :max="9999" />
         </el-form-item>
-        <el-form-item label="状态">
+        <el-form-item :label="t('common.status')">
           <el-radio-group v-model="form.status">
-            <el-radio-button :value="1">正常</el-radio-button>
-            <el-radio-button :value="0">禁用</el-radio-button>
+            <el-radio-button :value="1">{{ t('common.enabled') }}</el-radio-button>
+            <el-radio-button :value="0">{{ t('common.disabled') }}</el-radio-button>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="数据权限">
+        <el-form-item :label="t('role.dataScope')">
           <el-radio-group v-model="form.data_scope">
-            <el-radio-button value="all">全部数据</el-radio-button>
-            <el-radio-button value="self">仅本人数据</el-radio-button>
+            <el-radio-button value="all">{{ t('role.allData') }}</el-radio-button>
+            <el-radio-button value="self">{{ t('role.ownData') }}</el-radio-button>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="备注">
+        <el-form-item :label="t('configManage.remark')">
           <el-input v-model="form.remark" type="textarea" maxlength="255" show-word-limit />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="saving" @click="submitForm">保存</el-button>
+        <el-button @click="dialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" :loading="saving" @click="submitForm">{{ t('common.save') }}</el-button>
       </template>
     </el-dialog>
 
-    <el-dialog v-model="permissionVisible" :title="`分配权限：${permissionRole?.name || ''}`" width="560px">
+    <el-dialog v-model="permissionVisible" :title="t('role.assignPermissions', { name: permissionRole?.name || '' })" width="560px">
       <el-tree
         ref="menuTreeRef"
         :data="menuRows"
@@ -368,8 +370,8 @@ onMounted(loadData)
         :props="{ label: 'title', children: 'children' }"
       />
       <template #footer>
-        <el-button @click="permissionVisible = false">取消</el-button>
-        <el-button type="primary" :loading="permissionSaving" @click="submitPermission">保存</el-button>
+        <el-button @click="permissionVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" :loading="permissionSaving" @click="submitPermission">{{ t('common.save') }}</el-button>
       </template>
     </el-dialog>
   </el-card>

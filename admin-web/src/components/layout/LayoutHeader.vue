@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { ElNotification } from 'element-plus'
 import {
   ArrowDown,
@@ -15,6 +16,7 @@ import {
 } from '@element-plus/icons-vue'
 import { useAppStore } from '../../stores/app'
 import { useAuthStore } from '../../stores/auth'
+import { localeOptions, type AppLocale } from '../../plugins/i18n'
 import { fetchRecentNotices, readAllNotices, readNotice, type AdminNoticeRow } from '../../api/system'
 import SidebarMenu from '../SidebarMenu.vue'
 
@@ -23,6 +25,7 @@ defineEmits<{
 }>()
 
 const appStore = useAppStore()
+const { t } = useI18n()
 const authStore = useAuthStore()
 const router = useRouter()
 const route = useRoute()
@@ -43,6 +46,7 @@ const breadcrumbItems = computed(() => {
       title: String(item.meta.title),
     }))
 })
+const localeLabel = computed(() => localeOptions.find((item) => item.value === appStore.locale)?.label || 'English')
 
 async function handleLogout() {
   await authStore.logout()
@@ -71,6 +75,12 @@ function logoUrl(url = '') {
 
 function refreshPage() {
   router.go(0)
+}
+
+function switchLocale(locale: string | number | object) {
+  if (locale === 'en-us' || locale === 'zh-cn') {
+    appStore.setLocale(locale as AppLocale)
+  }
 }
 
 async function toggleFullscreen() {
@@ -107,7 +117,7 @@ function showPopupNotices(items: AdminNoticeRow[]) {
     .forEach((notice) => {
       ElNotification({
         title: notice.title,
-        message: notice.content || '你有一条新的消息通知',
+        message: notice.content || t('common.messages'),
         type: (notice.type === 'danger' ? 'error' : notice.type === 'primary' ? 'info' : notice.type) as 'success' | 'warning' | 'info' | 'error',
         position: 'bottom-right',
         duration: 4500,
@@ -149,8 +159,8 @@ onMounted(() => {
         <span>{{ appStore.siteConfig.adminTitle }}</span>
       </div>
 
-      <el-tooltip v-if="showCollapse" content="折叠菜单" placement="bottom">
-        <button class="pure-icon-btn" type="button" aria-label="折叠菜单" @click="appStore.toggleSidebar()">
+      <el-tooltip v-if="showCollapse" :content="t('common.sidebarCollapse')" placement="bottom">
+        <button class="pure-icon-btn" type="button" :aria-label="t('common.sidebarCollapse')" @click="appStore.toggleSidebar()">
           <el-icon>
             <Expand v-if="appStore.sidebarCollapsed" />
             <Fold v-else />
@@ -176,26 +186,26 @@ onMounted(() => {
       <el-menu mode="horizontal" router :default-active="route.path" class="pure-top-menu">
         <el-menu-item index="/dashboard">
           <el-icon><House /></el-icon>
-          <span>控制台</span>
+          <span>{{ t('common.dashboard') }}</span>
         </el-menu-item>
         <SidebarMenu :menus="authStore.menus" />
       </el-menu>
     </div>
 
     <div class="pure-navbar-right">
-      <el-tooltip content="刷新" placement="bottom">
-        <button class="pure-icon-btn" type="button" aria-label="刷新" @click="refreshPage">
+      <el-tooltip :content="t('common.refresh')" placement="bottom">
+        <button class="pure-icon-btn" type="button" :aria-label="t('common.refresh')" @click="refreshPage">
           <el-icon><Refresh /></el-icon>
         </button>
       </el-tooltip>
-      <el-tooltip content="全屏" placement="bottom">
-        <button class="pure-icon-btn" type="button" aria-label="全屏" @click="toggleFullscreen">
+      <el-tooltip :content="t('common.fullscreen')" placement="bottom">
+        <button class="pure-icon-btn" type="button" :aria-label="t('common.fullscreen')" @click="toggleFullscreen">
           <el-icon><FullScreen /></el-icon>
         </button>
       </el-tooltip>
       <el-popover placement="bottom-end" width="340" trigger="click" @show="loadNotices">
         <template #reference>
-          <button class="pure-icon-btn" type="button" aria-label="消息">
+          <button class="pure-icon-btn" type="button" :aria-label="t('common.messages')">
             <el-badge class="pure-badge" :is-dot="unreadCount > 0">
               <el-icon><Bell /></el-icon>
             </el-badge>
@@ -203,25 +213,44 @@ onMounted(() => {
         </template>
         <div class="notice-panel">
           <div class="notice-header">
-            <span>消息通知</span>
-            <el-button v-if="unreadCount > 0" link type="primary" @click="markAllRead">全部已读</el-button>
+            <span>{{ t('common.messages') }}</span>
+            <el-button v-if="unreadCount > 0" link type="primary" @click="markAllRead">{{ t('common.allRead') }}</el-button>
           </div>
-          <el-empty v-if="notices.length === 0" description="暂无消息" />
+          <el-empty v-if="notices.length === 0" :description="t('common.noMessage')" />
           <div v-for="notice in notices" v-else :key="notice.id" class="notice-item">
             <div class="notice-title">
-              <el-tag :type="notice.type || 'info'" size="small">{{ notice.read === 0 ? '未读' : '已读' }}</el-tag>
+              <el-tag :type="notice.type || 'info'" size="small">{{ notice.read === 0 ? t('common.unread') : t('common.read') }}</el-tag>
               <span>{{ notice.title }}</span>
             </div>
             <div class="notice-content">{{ notice.content }}</div>
             <div class="notice-footer">
               <span>{{ notice.create_time }}</span>
-              <el-button v-if="notice.read === 0" link type="primary" @click="markRead(notice)">标记已读</el-button>
+              <el-button v-if="notice.read === 0" link type="primary" @click="markRead(notice)">{{ t('common.markRead') }}</el-button>
             </div>
           </div>
         </div>
       </el-popover>
-      <el-tooltip content="项目配置" placement="bottom">
-        <button class="pure-icon-btn" type="button" aria-label="项目配置" @click="$emit('openSetting')">
+      <el-dropdown trigger="click" @command="switchLocale">
+        <button class="pure-language" type="button" :aria-label="t('common.language')">
+          {{ localeLabel }}
+          <el-icon><ArrowDown /></el-icon>
+        </button>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item
+              v-for="item in localeOptions"
+              :key="item.value"
+              :command="item.value"
+              :disabled="item.value === appStore.locale"
+            >
+              {{ item.label }}
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
+
+      <el-tooltip :content="t('common.projectSetting')" placement="bottom">
+        <button class="pure-icon-btn" type="button" :aria-label="t('common.projectSetting')" @click="$emit('openSetting')">
           <el-icon><Setting /></el-icon>
         </button>
       </el-tooltip>
@@ -237,10 +266,10 @@ onMounted(() => {
         </button>
         <template #dropdown>
           <el-dropdown-menu>
-            <el-dropdown-item @click="openProfile">个人中心</el-dropdown-item>
+            <el-dropdown-item @click="openProfile">{{ t('common.profile') }}</el-dropdown-item>
             <el-dropdown-item divided @click="handleLogout">
               <el-icon><SwitchButton /></el-icon>
-              退出登录
+              {{ t('common.logout') }}
             </el-dropdown-item>
           </el-dropdown-menu>
         </template>
@@ -266,6 +295,7 @@ onMounted(() => {
 .pure-navbar-center,
 .pure-navbar-right,
 .pure-user,
+.pure-language,
 .pure-header-logo {
   display: flex;
   align-items: center;
@@ -347,7 +377,8 @@ onMounted(() => {
 }
 
 .pure-icon-btn:hover,
-.pure-user:hover {
+.pure-user:hover,
+.pure-language:hover {
   background: var(--el-fill-color-light);
 }
 
@@ -411,12 +442,21 @@ onMounted(() => {
   align-items: center;
 }
 
-.pure-user {
+.pure-user,
+.pure-language {
   height: 36px;
   gap: 8px;
   padding: 0 8px;
   border-radius: 6px;
   font-size: 14px;
+}
+
+.pure-language {
+  border: 0;
+  background: transparent;
+  color: var(--el-text-color-primary);
+  cursor: pointer;
+  white-space: nowrap;
 }
 
 @media (max-width: 768px) {

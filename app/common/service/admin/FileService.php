@@ -64,20 +64,20 @@ class FileService
     public function upload(?UploadedFile $file, int $uploaderId = 0, ?array $allowedExtensions = null, string $scene = 'default'): array
     {
         if (!$file) {
-            throw new RuntimeException('请选择上传文件');
+            throw new RuntimeException(\think\facade\Lang::get('admin.select_upload_file'));
         }
 
         $extension = strtolower($file->getOriginalExtension());
         $allowedExtensions = $allowedExtensions ?: $this->allowedExtensions();
 
         if ($extension === '' || !in_array($extension, $allowedExtensions, true)) {
-            throw new RuntimeException('文件类型不允许');
+            throw new RuntimeException(\think\facade\Lang::get('admin.file_type_not_allowed'));
         }
 
         $maxSize = $this->maxSizeMb() * 1024 * 1024;
 
         if ($file->getSize() > $maxSize) {
-            throw new RuntimeException('文件大小超过限制');
+            throw new RuntimeException(\think\facade\Lang::get('admin.file_size_exceeded'));
         }
 
         $sha1 = sha1_file($file->getRealPath()) ?: '';
@@ -95,7 +95,7 @@ class FileService
             $path = Filesystem::disk($disk)->putFile('uploads', $file);
 
             if (!$path) {
-                throw new RuntimeException('文件保存失败');
+                throw new RuntimeException(\think\facade\Lang::get('admin.save_file_failed'));
             }
 
             $url = Filesystem::disk($disk)->url($path);
@@ -166,7 +166,7 @@ class FileService
         $ids = $this->filterIds($ids);
 
         if (!$ids) {
-            throw new RuntimeException('请选择文件');
+            throw new RuntimeException(\think\facade\Lang::get('admin.select_files'));
         }
 
         foreach ($ids as $id) {
@@ -183,7 +183,7 @@ class FileService
         $file = $this->findFile($id, $operatorId, $dataScope);
 
         if ($name === '') {
-            throw new RuntimeException('请输入文件名');
+            throw new RuntimeException(\think\facade\Lang::get('admin.file_name_required'));
         }
 
         $file->save(['original_name' => $name]);
@@ -250,7 +250,7 @@ class FileService
         $file = $query->find();
 
         if (!$file) {
-            throw new RuntimeException('文件不存在');
+            throw new RuntimeException(\think\facade\Lang::get('admin.file_not_found'));
         }
 
         return $file;

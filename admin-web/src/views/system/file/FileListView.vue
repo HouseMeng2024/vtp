@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Document, MoreFilled, Picture } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
@@ -14,6 +15,7 @@ import { useAuthStore } from '../../../stores/auth'
 import FileSelector from '../../../components/FileSelector.vue'
 
 const authStore = useAuthStore()
+const { t } = useI18n()
 const loading = ref(false)
 const selectorVisible = ref(false)
 const previewVisible = ref(false)
@@ -34,13 +36,13 @@ const canDelete = computed(() => authStore.hasPermission('admin:file:delete'))
 const canUpdate = computed(() => authStore.hasPermission('admin:file:update'))
 const backendOrigin = import.meta.env.DEV ? 'http://127.0.0.1:8000' : ''
 const extensionOptions = ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx', 'xls', 'xlsx']
-const categoryOptions = [
-  { label: '图片', value: 'image' },
-  { label: '文档', value: 'document' },
-  { label: '表格', value: 'sheet' },
-  { label: '压缩包', value: 'archive' },
-  { label: '其他', value: 'other' },
-]
+const categoryOptions = computed(() => [
+  { label: t('file.image'), value: 'image' },
+  { label: t('file.document'), value: 'document' },
+  { label: t('file.sheet'), value: 'sheet' },
+  { label: t('file.archive'), value: 'archive' },
+  { label: t('file.other'), value: 'other' },
+])
 
 async function loadData() {
   loading.value = true
@@ -108,46 +110,46 @@ function openFile(row: UploadFileRow) {
 async function handleDelete(row: UploadFileRow) {
   const info = await fetchUploadFileDeleteInfo(row.id)
   const message = info.reference_count > 0
-    ? `文件「${row.original_name}」还有 ${info.reference_count} 条记录引用同一个物理文件，本次只删除当前记录，不会删除物理文件。`
-    : `文件「${row.original_name}」没有其他记录引用，删除后会同时删除物理文件。`
+    ? t('file.deleteWithReference', { name: row.original_name, count: info.reference_count })
+    : t('file.deleteNoReference', { name: row.original_name })
 
-  await ElMessageBox.confirm(message, '删除确认', {
+  await ElMessageBox.confirm(message, t('common.deleteConfirmation'), {
     type: 'warning',
   })
   await deleteUploadFile(row.id)
-  ElMessage.success('删除成功')
+  ElMessage.success(t('configManage.deleted'))
   loadData()
 }
 
 async function handleBatchDelete() {
   if (selectedIds.value.length === 0) {
-    ElMessage.warning('请先选择文件')
+    ElMessage.warning(t('file.selectFilesFirst'))
     return
   }
 
-  await ElMessageBox.confirm(`确定删除选中的 ${selectedIds.value.length} 个文件吗？`, '批量删除确认', {
+  await ElMessageBox.confirm(t('file.batchDeleteConfirm', { count: selectedIds.value.length }), t('log.bulkDeleteTitle'), {
     type: 'warning',
   })
   await batchDeleteUploadFiles(selectedIds.value)
   selectedIds.value = []
-  ElMessage.success('批量删除成功')
+  ElMessage.success(t('common.bulkDeleteSuccess'))
   loadData()
 }
 
 async function handleRename(row: UploadFileRow) {
-  const result = await ElMessageBox.prompt('请输入新的文件显示名称', '重命名', {
+  const result = await ElMessageBox.prompt(t('file.renamePrompt'), t('file.rename'), {
     inputValue: row.original_name,
     inputPattern: /.+/,
-    inputErrorMessage: '请输入文件名',
+    inputErrorMessage: t('file.fileNameRequired'),
   })
   await renameUploadFile(row.id, result.value)
-  ElMessage.success('重命名成功')
+  ElMessage.success(t('file.renamed'))
   loadData()
 }
 
 async function copyLink(row: UploadFileRow) {
   await navigator.clipboard.writeText(fileUrl(row))
-  ElMessage.success('链接已复制')
+  ElMessage.success(t('file.linkCopied'))
 }
 
 onMounted(loadData)
@@ -157,40 +159,40 @@ onMounted(loadData)
   <el-card class="page-card" shadow="never">
     <template #header>
       <div class="page-toolbar">
-        <div class="page-title">文件管理</div>
+        <div class="page-title">{{ t('file.fileManagement') }}</div>
         <el-space>
           <el-button v-if="canDelete" type="danger" :disabled="selectedIds.length === 0" @click="handleBatchDelete">
-            批量删除
+            {{ t('common.bulkDelete') }}
           </el-button>
-          <el-button v-if="canUpload" type="primary" @click="selectorVisible = true">上传 / 选择文件</el-button>
+          <el-button v-if="canUpload" type="primary" @click="selectorVisible = true">{{ t('file.uploadSelectFile') }}</el-button>
         </el-space>
       </div>
     </template>
 
     <el-form class="page-search" inline @submit.prevent>
-      <el-form-item label="关键词">
-        <el-input v-model="query.keyword" clearable placeholder="文件名 / 路径" @keyup.enter="handleSearch" />
+      <el-form-item :label="t('common.keyword')">
+        <el-input v-model="query.keyword" clearable :placeholder="t('file.fileNamePath')" @keyup.enter="handleSearch" />
       </el-form-item>
-      <el-form-item label="类型">
-        <el-select v-model="query.extension" clearable placeholder="全部类型" style="width: 140px" @change="handleSearch">
+      <el-form-item :label="t('file.type')">
+        <el-select v-model="query.extension" clearable :placeholder="t('file.allTypes')" style="width: 140px" @change="handleSearch">
           <el-option v-for="item in extensionOptions" :key="item" :label="item" :value="item" />
         </el-select>
       </el-form-item>
-      <el-form-item label="分类">
-        <el-select v-model="query.category" clearable placeholder="全部分类" style="width: 140px" @change="handleSearch">
+      <el-form-item :label="t('file.category')">
+        <el-select v-model="query.category" clearable :placeholder="t('file.allCategories')" style="width: 140px" @change="handleSearch">
           <el-option v-for="item in categoryOptions" :key="item.value" :label="item.label" :value="item.value" />
         </el-select>
       </el-form-item>
-      <el-form-item label="场景">
-        <el-input v-model="query.scene" clearable placeholder="如 default / setting" style="width: 170px" @keyup.enter="handleSearch" />
+      <el-form-item :label="t('file.scene')">
+        <el-input v-model="query.scene" clearable :placeholder="t('file.scenePlaceholder')" style="width: 170px" @keyup.enter="handleSearch" />
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="handleSearch">查询</el-button>
+        <el-button type="primary" @click="handleSearch">{{ t('common.search') }}</el-button>
       </el-form-item>
     </el-form>
 
     <div v-loading="loading" class="file-grid">
-      <el-empty v-if="!loading && rows.length === 0" description="暂无文件" />
+      <el-empty v-if="!loading && rows.length === 0" :description="t('file.noFiles')" />
       <div v-for="row in rows" :key="row.id" class="file-card">
         <el-checkbox
           class="file-check"
@@ -221,18 +223,18 @@ onMounted(loadData)
           <div class="file-time">{{ row.create_time }}</div>
         </div>
         <div class="file-actions">
-          <el-button link type="primary" tag="a" :href="fileUrl(row)" target="_blank">查看</el-button>
-          <el-button link type="primary" tag="a" :href="fileUrl(row)" :download="row.original_name">下载</el-button>
+          <el-button link type="primary" tag="a" :href="fileUrl(row)" target="_blank">{{ t('file.view') }}</el-button>
+          <el-button link type="primary" tag="a" :href="fileUrl(row)" :download="row.original_name">{{ t('file.download') }}</el-button>
           <el-dropdown trigger="click">
-            <button class="file-more" type="button" aria-label="更多操作">
+            <button class="file-more" type="button" aria-label="More actions">
               <el-icon><MoreFilled /></el-icon>
             </button>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item @click="copyLink(row)">复制链接</el-dropdown-item>
-                <el-dropdown-item v-if="canUpdate" @click="handleRename(row)">重命名</el-dropdown-item>
+                <el-dropdown-item @click="copyLink(row)">{{ t('file.copyLink') }}</el-dropdown-item>
+                <el-dropdown-item v-if="canUpdate" @click="handleRename(row)">{{ t('file.rename') }}</el-dropdown-item>
                 <el-dropdown-item v-if="canDelete" divided @click="handleDelete(row)">
-                  <span class="danger-text">删除</span>
+                  <span class="danger-text">{{ t('common.delete') }}</span>
                 </el-dropdown-item>
               </el-dropdown-menu>
             </template>

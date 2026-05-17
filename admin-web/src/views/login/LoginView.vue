@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { captchaApi } from '../../api/auth'
 import { useAppStore } from '../../stores/app'
 import { useAuthStore } from '../../stores/auth'
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
@@ -73,27 +75,27 @@ onMounted(() => {
 
       <el-card class="login-card" shadow="never">
         <div class="login-card-header">
-          <h2>后台登录</h2>
-          <p>请输入管理员账号和密码</p>
+          <h2>{{ t('login.title') }}</h2>
+          <p>{{ t('login.subtitle') }}</p>
         </div>
 
         <el-form label-position="top" @submit.prevent="handleLogin">
-          <el-form-item label="账号">
-            <el-input v-model="form.username" placeholder="admin" />
+          <el-form-item :label="t('common.account')">
+            <el-input v-model="form.username" :placeholder="t('login.accountPlaceholder')" />
           </el-form-item>
-          <el-form-item label="密码">
-            <el-input v-model="form.password" type="password" show-password placeholder="请输入密码" />
+          <el-form-item :label="t('common.password')">
+            <el-input v-model="form.password" type="password" show-password :placeholder="t('login.passwordPlaceholder')" />
           </el-form-item>
-          <el-form-item v-if="captchaEnabled" label="验证码">
+          <el-form-item v-if="captchaEnabled" :label="t('common.captcha')">
             <div class="captcha-row">
-              <el-input v-model="form.captcha_code" placeholder="请输入结果" @keyup.enter="handleLogin" />
+              <el-input v-model="form.captcha_code" :placeholder="t('login.captchaPlaceholder')" @keyup.enter="handleLogin" />
               <button class="captcha-image" type="button" @click="loadCaptcha">
-                <img :src="captchaImage" alt="验证码" />
+                <img :src="captchaImage" :alt="t('login.captchaAlt')" />
               </button>
             </div>
           </el-form-item>
           <el-button type="primary" native-type="submit" class="submit" :loading="loading">
-            登录
+            {{ t('common.login') }}
           </el-button>
         </el-form>
       </el-card>

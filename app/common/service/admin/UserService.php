@@ -59,7 +59,7 @@ class UserService
         $roleIds = $this->filterRoleIds($data['role_ids'] ?? []);
 
         if (AdminUser::where('username', $payload['username'])->find()) {
-            throw new RuntimeException('账号已存在');
+            throw new RuntimeException(\think\facade\Lang::get('admin.account_exists'));
         }
 
         $user = AdminUser::create($payload);
@@ -82,7 +82,7 @@ class UserService
             ->find();
 
         if ($exists) {
-            throw new RuntimeException('账号已存在');
+            throw new RuntimeException(\think\facade\Lang::get('admin.account_exists'));
         }
 
         $user->save($payload);
@@ -119,7 +119,7 @@ class UserService
         $ids = $this->filterIds($ids);
 
         if (!$ids) {
-            throw new RuntimeException('请选择管理员');
+            throw new RuntimeException(\think\facade\Lang::get('admin.select_admins'));
         }
 
         $status = $status === 1 ? 1 : 0;
@@ -140,7 +140,7 @@ class UserService
     public function delete(int $id): void
     {
         if ($id === 1) {
-            throw new RuntimeException('默认超级管理员不能删除');
+            throw new RuntimeException(\think\facade\Lang::get('admin.default_super_admin_delete_forbidden'));
         }
 
         $user = $this->findUser($id);
@@ -156,11 +156,11 @@ class UserService
         $ids = $this->filterIds($ids);
 
         if (!$ids) {
-            throw new RuntimeException('请选择管理员');
+            throw new RuntimeException(\think\facade\Lang::get('admin.select_admins'));
         }
 
         if (in_array(1, $ids, true)) {
-            throw new RuntimeException('默认超级管理员不能删除');
+            throw new RuntimeException(\think\facade\Lang::get('admin.default_super_admin_delete_forbidden'));
         }
 
         foreach ($ids as $id) {
@@ -200,7 +200,7 @@ class UserService
         $user = AdminUser::find($id);
 
         if (!$user) {
-            throw new RuntimeException('管理员不存在');
+            throw new RuntimeException(\think\facade\Lang::get('admin.admin_not_found'));
         }
 
         return $user;
@@ -215,11 +215,11 @@ class UserService
         $password = (string) ($data['password'] ?? '');
 
         if ($username === '') {
-            throw new RuntimeException('请输入账号');
+            throw new RuntimeException(\think\facade\Lang::get('admin.account_required'));
         }
 
         if ($isCreate && $password === '') {
-            throw new RuntimeException('请输入密码');
+            throw new RuntimeException(\think\facade\Lang::get('admin.password_required'));
         }
 
         $payload = [
@@ -232,7 +232,7 @@ class UserService
 
         if ($password !== '') {
             if (strlen($password) < 6) {
-                throw new RuntimeException('密码至少 6 位');
+                throw new RuntimeException(\think\facade\Lang::get('admin.password_min'));
             }
 
             $payload['password'] = password_hash($password, PASSWORD_BCRYPT);

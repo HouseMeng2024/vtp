@@ -2,10 +2,12 @@
 import { computed } from 'vue'
 import { House } from '@element-plus/icons-vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAppStore } from '../../stores/app'
 import { useAuthStore } from '../../stores/auth'
 import SidebarMenu from '../SidebarMenu.vue'
 
+const { t } = useI18n()
 const appStore = useAppStore()
 const authStore = useAuthStore()
 const route = useRoute()
@@ -48,7 +50,7 @@ function logoUrl(url = '') {
     >
       <el-menu-item index="/dashboard">
         <el-icon><House /></el-icon>
-        <span>控制台</span>
+        <span>{{ t('common.dashboard') }}</span>
       </el-menu-item>
       <SidebarMenu :menus="authStore.menus" />
     </el-menu>

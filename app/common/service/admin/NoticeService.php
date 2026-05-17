@@ -122,11 +122,11 @@ class NoticeService
         $notice = AdminNotice::find($noticeId);
 
         if (!$notice || (int) $notice->status !== 1) {
-            throw new RuntimeException('消息不存在');
+            throw new RuntimeException(\think\facade\Lang::get('admin.notice_not_found'));
         }
 
         if (!$this->canReceive($notice->toArray(), $userId, $this->userRoleIds($userId))) {
-            throw new RuntimeException('消息不存在');
+            throw new RuntimeException(\think\facade\Lang::get('admin.notice_not_found'));
         }
 
         if (AdminNoticeRead::where('user_id', $userId)->where('notice_id', $noticeId)->find()) {
@@ -164,7 +164,7 @@ class NoticeService
         $notice = AdminNotice::find($id);
 
         if (!$notice) {
-            throw new RuntimeException('消息不存在');
+            throw new RuntimeException(\think\facade\Lang::get('admin.notice_not_found'));
         }
 
         return $notice;
@@ -180,7 +180,7 @@ class NoticeService
         $type = trim((string) ($data['type'] ?? 'info'));
 
         if ($title === '') {
-            throw new RuntimeException('请输入消息标题');
+            throw new RuntimeException(\think\facade\Lang::get('admin.notice_title_required'));
         }
 
         if (!in_array($type, ['primary', 'success', 'info', 'warning', 'danger'], true)) {
@@ -196,7 +196,7 @@ class NoticeService
         $scopeIds = $scopeType === 'all' ? '' : $this->normalizeScopeIds($data['scope_ids'] ?? []);
 
         if ($scopeType !== 'all' && $scopeIds === '') {
-            throw new RuntimeException('请选择接收对象');
+            throw new RuntimeException(\think\facade\Lang::get('admin.select_recipients'));
         }
 
         return [

@@ -54,7 +54,7 @@ class MenuService
         $menu = $this->findMenu($id);
 
         if (AdminMenu::where('parent_id', $id)->find()) {
-            throw new RuntimeException('存在子级菜单，不能删除');
+            throw new RuntimeException(\think\facade\Lang::get('admin.child_menu_exists'));
         }
 
         $menu->delete();
@@ -167,7 +167,7 @@ class MenuService
         $menu = AdminMenu::find($id);
 
         if (!$menu) {
-            throw new RuntimeException('菜单不存在');
+            throw new RuntimeException(\think\facade\Lang::get('admin.menu_not_found'));
         }
 
         return $menu;
@@ -183,19 +183,19 @@ class MenuService
         $title = trim((string) ($data['title'] ?? ''));
 
         if (!in_array($type, [1, 2, 3], true)) {
-            throw new RuntimeException('菜单类型错误');
+            throw new RuntimeException(\think\facade\Lang::get('admin.invalid_menu_type'));
         }
 
         if ($title === '') {
-            throw new RuntimeException('请输入菜单名称');
+            throw new RuntimeException(\think\facade\Lang::get('admin.menu_name_required'));
         }
 
         if ($id > 0 && $parentId === $id) {
-            throw new RuntimeException('父级不能选择自身');
+            throw new RuntimeException(\think\facade\Lang::get('admin.parent_menu_self'));
         }
 
         if ($parentId > 0 && !AdminMenu::find($parentId)) {
-            throw new RuntimeException('父级菜单不存在');
+            throw new RuntimeException(\think\facade\Lang::get('admin.parent_menu_not_found'));
         }
 
         return [
