@@ -760,21 +760,6 @@ class CodeGeneratorService
     }
 
     /**
-     * 获取可选顶级导航。
-     */
-    private function navigationOptions(): array
-    {
-        return AdminMenu::where('parent_id', 0)
-            ->where('type', 1)
-            ->where('status', 1)
-            ->order('sort', 'asc')
-            ->order('id', 'asc')
-            ->field('id,title,path')
-            ->select()
-            ->toArray();
-    }
-
-    /**
      * 获取父级菜单路径。
      */
     private function parentMenuPath(int $parentId): string
@@ -804,29 +789,11 @@ class CodeGeneratorService
     }
 
     /**
-     * 缩进多行片段。
-     */
-    private function indentSnippet(string $snippet, int $spaces): string
-    {
-        $indent = str_repeat(' ', $spaces);
-
-        return implode("\n", array_map(fn (string $line) => $indent . $line, explode("\n", $snippet)));
-    }
-
-    /**
      * 转换为大驼峰类名。
      */
     private function studly(string $value): string
     {
         return str_replace(' ', '', ucwords(str_replace(['-', '_'], ' ', $value)));
-    }
-
-    /**
-     * 获取复数路由段。
-     */
-    private function plural(string $value): string
-    {
-        return str_ends_with($value, 's') ? $value : $value . 's';
     }
 
     /**
