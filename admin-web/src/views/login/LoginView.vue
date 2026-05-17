@@ -14,8 +14,8 @@ const captchaEnabled = ref(false)
 const captchaImage = ref('')
 const backendOrigin = import.meta.env.DEV ? 'http://127.0.0.1:8000' : ''
 const form = reactive({
-  username: 'admin',
-  password: 'admin123',
+  username: '',
+  password: '',
   captcha_key: '',
   captcha_code: '',
 })
