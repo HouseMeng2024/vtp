@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
-import { Plus } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import {
   createArticle,
@@ -13,7 +12,7 @@ import {
   type ArticleRow,
 } from '../../../api/article'
 import { fetchContentCategories, type ContentCategoryRow } from '../../../api/contentCategory'
-import FileSelector from '../../../components/FileSelector.vue'
+import ImagePicker from '../../../components/ImagePicker.vue'
 import RichEditor from '../../../components/RichEditor.vue'
 import { useAuthStore } from '../../../stores/auth'
 import { normalizeAssetUrl } from '../../../utils/asset'
@@ -22,7 +21,6 @@ const authStore = useAuthStore()
 const loading = ref(false)
 const saving = ref(false)
 const drawerVisible = ref(false)
-const fileSelectorVisible = ref(false)
 const editingId = ref<number | null>(null)
 const formRef = ref<FormInstance>()
 const rows = ref<ArticleRow[]>([])
@@ -173,12 +171,6 @@ async function handleDelete(row: ArticleRow) {
   loadData()
 }
 
-function handleCoverSelected(files: Array<{ url: string }>) {
-  if (files.length) {
-    form.cover = files[0].url
-  }
-}
-
 onMounted(() => {
   loadCategories()
   loadData()
@@ -298,10 +290,7 @@ onMounted(() => {
           </el-col>
           <el-col :span="24">
             <el-form-item label="封面">
-              <button class="image-picker" type="button" @click="fileSelectorVisible = true">
-                <el-image v-if="form.cover" :src="normalizeAssetUrl(form.cover)" fit="cover" />
-                <el-icon v-else><Plus /></el-icon>
-              </button>
+              <ImagePicker v-model="form.cover" scene="article_cover" :width="140" :height="90" fit="cover" />
             </el-form-item>
           </el-col>
           <el-col :span="24">
@@ -356,8 +345,6 @@ onMounted(() => {
         <el-button type="primary" :loading="saving" @click="submitForm">保存</el-button>
       </template>
     </el-drawer>
-
-    <FileSelector v-model="fileSelectorVisible" accept-type="image" scene="article_cover" :current-url="form.cover" @select="handleCoverSelected" />
   </el-card>
 </template>
 
@@ -372,22 +359,4 @@ onMounted(() => {
   border-radius: 4px;
 }
 
-.image-picker {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 140px;
-  height: 90px;
-  overflow: hidden;
-  color: var(--el-text-color-secondary);
-  cursor: pointer;
-  background: var(--el-fill-color-lighter);
-  border: 1px dashed var(--el-border-color);
-  border-radius: 6px;
-}
-
-.image-picker .el-image {
-  width: 100%;
-  height: 100%;
-}
 </style>

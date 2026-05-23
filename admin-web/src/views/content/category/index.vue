@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
-import { Plus } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import {
   createContentCategory,
@@ -12,7 +11,7 @@ import {
   type ContentCategoryRow,
 } from '../../../api/contentCategory'
 import { fetchDictOptions, type DictOption } from '../../../api/dict'
-import FileSelector from '../../../components/FileSelector.vue'
+import ImagePicker from '../../../components/ImagePicker.vue'
 import { useAuthStore } from '../../../stores/auth'
 import { normalizeAssetUrl } from '../../../utils/asset'
 
@@ -20,7 +19,6 @@ const authStore = useAuthStore()
 const loading = ref(false)
 const saving = ref(false)
 const dialogVisible = ref(false)
-const fileSelectorVisible = ref(false)
 const editingId = ref<number | null>(null)
 const formRef = ref<FormInstance>()
 const rows = ref<ContentCategoryRow[]>([])
@@ -157,12 +155,6 @@ async function handleDelete(row: ContentCategoryRow) {
   loadData()
 }
 
-function handleCoverSelected(files: Array<{ url: string }>) {
-  if (files.length) {
-    form.cover = files[0].url
-  }
-}
-
 onMounted(async () => {
   await loadContentModels()
   await loadData()
@@ -275,10 +267,7 @@ onMounted(async () => {
           </el-col>
           <el-col :span="24">
             <el-form-item label="封面">
-              <button class="image-picker" type="button" @click="fileSelectorVisible = true">
-                <el-image v-if="form.cover" :src="normalizeAssetUrl(form.cover)" fit="cover" />
-                <el-icon v-else><Plus /></el-icon>
-              </button>
+              <ImagePicker v-model="form.cover" scene="content_category" fit="cover" />
             </el-form-item>
           </el-col>
           <el-col :span="24">
@@ -293,8 +282,6 @@ onMounted(async () => {
         <el-button type="primary" :loading="saving" @click="submitForm">保存</el-button>
       </template>
     </el-dialog>
-
-    <FileSelector v-model="fileSelectorVisible" accept-type="image" scene="content_category" :current-url="form.cover" @select="handleCoverSelected" />
   </el-card>
 </template>
 
@@ -309,22 +296,4 @@ onMounted(async () => {
   border-radius: 4px;
 }
 
-.image-picker {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 96px;
-  height: 96px;
-  overflow: hidden;
-  color: var(--el-text-color-secondary);
-  cursor: pointer;
-  background: var(--el-fill-color-lighter);
-  border: 1px dashed var(--el-border-color);
-  border-radius: 6px;
-}
-
-.image-picker .el-image {
-  width: 100%;
-  height: 100%;
-}
 </style>

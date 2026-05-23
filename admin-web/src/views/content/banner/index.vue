@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
-import { Plus } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import {
   createBanner,
@@ -13,7 +12,7 @@ import {
   type BannerPayload,
   type BannerRow,
 } from '../../../api/banner'
-import FileSelector from '../../../components/FileSelector.vue'
+import ImagePicker from '../../../components/ImagePicker.vue'
 import { useAuthStore } from '../../../stores/auth'
 import { normalizeAssetUrl } from '../../../utils/asset'
 
@@ -21,7 +20,6 @@ const authStore = useAuthStore()
 const loading = ref(false)
 const saving = ref(false)
 const dialogVisible = ref(false)
-const fileSelectorVisible = ref(false)
 const editingId = ref<number | null>(null)
 const formRef = ref<FormInstance>()
 const rows = ref<BannerRow[]>([])
@@ -153,12 +151,6 @@ async function handleDelete(row: BannerRow) {
   loadData()
 }
 
-function handleImageSelected(files: Array<{ url: string }>) {
-  if (files.length) {
-    form.image = files[0].url
-  }
-}
-
 onMounted(() => {
   loadData()
   loadOptions()
@@ -264,10 +256,14 @@ onMounted(() => {
           </el-col>
           <el-col :span="24">
             <el-form-item label="图片" prop="image">
-              <button class="image-picker" type="button" @click="fileSelectorVisible = true">
-                <el-image v-if="form.image" :src="normalizeAssetUrl(form.image)" fit="cover" />
-                <el-icon v-else><Plus /></el-icon>
-              </button>
+              <ImagePicker
+                v-model="form.image"
+                scene="banner"
+                :width="220"
+                :height="110"
+                fit="cover"
+                @change="formRef?.validateField('image')"
+              />
             </el-form-item>
           </el-col>
           <el-col :span="24">
@@ -330,8 +326,6 @@ onMounted(() => {
         <el-button type="primary" :loading="saving" @click="submitForm">保存</el-button>
       </template>
     </el-dialog>
-
-    <FileSelector v-model="fileSelectorVisible" accept-type="image" scene="banner" :current-url="form.image" @select="handleImageSelected" />
   </el-card>
 </template>
 
@@ -344,25 +338,6 @@ onMounted(() => {
   width: 96px;
   height: 48px;
   border-radius: 4px;
-}
-
-.image-picker {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 220px;
-  height: 110px;
-  overflow: hidden;
-  color: var(--el-text-color-secondary);
-  cursor: pointer;
-  background: var(--el-fill-color-lighter);
-  border: 1px dashed var(--el-border-color);
-  border-radius: 6px;
-}
-
-.image-picker .el-image {
-  width: 100%;
-  height: 100%;
 }
 
 .link-option-url {
