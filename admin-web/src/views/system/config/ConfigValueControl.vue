@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { Delete, Plus, Refresh, View, ZoomIn } from '@element-plus/icons-vue'
 import type { SystemConfigItem } from '../../../api/config'
 import type { UploadFileRow } from '../../../api/file'
 import FileSelector from '../../../components/FileSelector.vue'
@@ -21,6 +22,9 @@ const emit = defineEmits<{
 const selectorVisible = ref(false)
 const selectorType = ref<'image' | 'file'>('image')
 const selectorMultiple = ref(false)
+const previewVisible = ref(false)
+const previewUrls = ref<string[]>([])
+const previewIndex = ref(0)
 const colorPredefine = [
   '#409EFF',
   '#1F75CB',
@@ -52,6 +56,7 @@ const arrayValue = computed<Array<string | number>>({
   get: () => Array.isArray(props.modelValue) ? props.modelValue : parseArrayValue(String(props.modelValue || '')),
   set: (nextValue) => emit('update:modelValue', nextValue),
 })
+const singleValue = computed(() => Array.isArray(props.modelValue) ? '' : String(props.modelValue || ''))
 const options = computed(() => parseOptions(props.item.options))
 
 function parseArrayValue(raw: string): Array<string | number> {
@@ -111,6 +116,62 @@ function openSelector(type: 'image' | 'file', multiple: boolean) {
 function handleSelected(files: UploadFileRow[]) {
   const urls = files.map((file) => file.url)
   emit('update:modelValue', selectorMultiple.value ? urls : (urls[0] || ''))
+}
+
+function openImagePreview(urls: Array<string | number>, index = 0) {
+  const normalizedUrls = urls.map((url) => normalizeAssetUrl(String(url))).filter(Boolean)
+
+  if (normalizedUrls.length === 0) {
+    return
+  }
+
+  previewUrls.value = normalizedUrls
+  previewIndex.value = Math.max(0, Math.min(index, normalizedUrls.length - 1))
+  previewVisible.value = true
+}
+
+function clearImage() {
+  emit('update:modelValue', '')
+}
+
+function removeImage(index: number) {
+  arrayValue.value = arrayValue.value.filter((_, currentIndex) => currentIndex !== index)
+}
+
+function openFile(url: string | number) {
+  window.open(normalizeAssetUrl(String(url)), '_blank')
+}
+
+function clearFile() {
+  emit('update:modelValue', '')
+}
+
+function removeFile(index: number) {
+  arrayValue.value = arrayValue.value.filter((_, currentIndex) => currentIndex !== index)
+}
+
+function fileName(url: string | number) {
+  const value = String(url || '')
+  const name = value.split('/').filter(Boolean).pop() || value
+
+  return decodeURIComponent(name)
+}
+
+function fileExtension(url: string | number) {
+  const name = fileName(url)
+  const extension = name.includes('.') ? name.split('.').pop() || '' : ''
+
+  return extension ? extension.slice(0, 5).toUpperCase() : 'FILE'
+}
+
+function fileDisplayName(url: string | number) {
+  const name = fileName(url)
+
+  if (!name.includes('.')) {
+    return name
+  }
+
+  return name.split('.').slice(0, -1).join('.') || name
 }
 </script>
 
@@ -258,38 +319,157 @@ function handleSelected(files: UploadFileRow[]) {
       :disabled="disabled"
     />
     <template v-else-if="item.type === 'image'">
-      <el-input v-model="value" :disabled="disabled" placeholder="请选择图片">
-        <template #append>
-          <el-button :disabled="disabled" @click="openSelector('image', false)">选择</el-button>
-        </template>
-      </el-input>
-      <el-image v-if="value" class="config-image" :src="normalizeAssetUrl(String(value))" fit="contain" />
+      <div class="image-list">
+        <div v-if="singleValue" class="image-item">
+          <button
+            class="image-preview"
+            type="button"
+            title="预览图片"
+            @click="openImagePreview([singleValue])"
+          >
+            <el-image class="config-image" :src="normalizeAssetUrl(singleValue)" fit="contain" />
+          </button>
+          <div class="image-actions">
+            <el-tooltip content="预览" placement="top">
+              <button class="image-action" type="button" aria-label="预览" @click="openImagePreview([singleValue])">
+                <el-icon><ZoomIn /></el-icon>
+              </button>
+            </el-tooltip>
+            <el-tooltip v-if="!disabled" content="更换" placement="top">
+              <button class="image-action" type="button" aria-label="更换" @click="openSelector('image', false)">
+                <el-icon><Refresh /></el-icon>
+              </button>
+            </el-tooltip>
+            <el-tooltip v-if="!disabled" content="移除" placement="top">
+              <button class="image-action danger" type="button" aria-label="移除" @click="clearImage">
+                <el-icon><Delete /></el-icon>
+              </button>
+            </el-tooltip>
+          </div>
+        </div>
+        <button
+          v-else-if="!disabled"
+          class="image-add"
+          type="button"
+          aria-label="选择图片"
+          @click="openSelector('image', false)"
+        >
+          <el-icon><Plus /></el-icon>
+        </button>
+      </div>
     </template>
     <template v-else-if="item.type === 'images'">
-      <div class="file-list">
-        <el-image
-          v-for="url in arrayValue"
-          :key="String(url)"
-          class="config-image"
-          :src="normalizeAssetUrl(String(url))"
-          fit="contain"
-        />
+      <div class="image-list">
+        <div v-for="(url, index) in arrayValue" :key="`${url}-${index}`" class="image-item">
+          <button
+            class="image-preview"
+            type="button"
+            title="预览图片"
+            @click="openImagePreview(arrayValue, index)"
+          >
+            <el-image
+              class="config-image"
+              :src="normalizeAssetUrl(String(url))"
+              fit="contain"
+            />
+          </button>
+          <div class="image-actions">
+            <el-tooltip content="预览" placement="top">
+              <button class="image-action" type="button" aria-label="预览" @click="openImagePreview(arrayValue, index)">
+                <el-icon><ZoomIn /></el-icon>
+              </button>
+            </el-tooltip>
+            <el-tooltip v-if="!disabled" content="移除" placement="top">
+              <button class="image-action danger" type="button" aria-label="移除" @click="removeImage(index)">
+                <el-icon><Delete /></el-icon>
+              </button>
+            </el-tooltip>
+          </div>
+        </div>
+        <button
+          v-if="!disabled"
+          class="image-add"
+          type="button"
+          aria-label="选择多图"
+          @click="openSelector('image', true)"
+        >
+          <el-icon><Plus /></el-icon>
+        </button>
       </div>
-      <el-button :disabled="disabled" @click="openSelector('image', true)">选择多图</el-button>
     </template>
     <template v-else-if="item.type === 'file'">
-      <el-input v-model="value" :disabled="disabled" placeholder="请选择文件">
-        <template #append>
-          <el-button :disabled="disabled" @click="openSelector('file', false)">选择</el-button>
-        </template>
-      </el-input>
+      <div class="file-card-list">
+        <div v-if="singleValue" class="config-file-card">
+          <button class="file-main" type="button" title="打开文件" @click="openFile(singleValue)">
+            <span class="file-ext">{{ fileExtension(singleValue) }}</span>
+            <span class="file-text">
+              <span class="file-name" :title="singleValue">{{ fileDisplayName(singleValue) }}</span>
+              <span class="file-path" :title="singleValue">{{ singleValue }}</span>
+            </span>
+          </button>
+          <div class="file-card-actions">
+            <el-tooltip content="打开" placement="top">
+              <button class="image-action" type="button" aria-label="打开" @click="openFile(singleValue)">
+                <el-icon><View /></el-icon>
+              </button>
+            </el-tooltip>
+            <el-tooltip v-if="!disabled" content="更换" placement="top">
+              <button class="image-action" type="button" aria-label="更换" @click="openSelector('file', false)">
+                <el-icon><Refresh /></el-icon>
+              </button>
+            </el-tooltip>
+            <el-tooltip v-if="!disabled" content="移除" placement="top">
+              <button class="image-action danger" type="button" aria-label="移除" @click="clearFile">
+                <el-icon><Delete /></el-icon>
+              </button>
+            </el-tooltip>
+          </div>
+        </div>
+        <button
+          v-else-if="!disabled"
+          class="file-add"
+          type="button"
+          aria-label="选择文件"
+          @click="openSelector('file', false)"
+        >
+          <el-icon><Plus /></el-icon>
+          <span>选择文件</span>
+        </button>
+      </div>
     </template>
     <template v-else-if="item.type === 'files'">
-      <el-tag v-for="url in arrayValue" :key="String(url)" class="file-tag" effect="plain">
-        {{ url }}
-      </el-tag>
-      <div>
-        <el-button :disabled="disabled" @click="openSelector('file', true)">选择多文件</el-button>
+      <div class="file-card-list">
+        <div v-for="(url, index) in arrayValue" :key="`${url}-${index}`" class="config-file-card">
+          <button class="file-main" type="button" title="打开文件" @click="openFile(url)">
+            <span class="file-ext">{{ fileExtension(url) }}</span>
+            <span class="file-text">
+              <span class="file-name" :title="String(url)">{{ fileDisplayName(url) }}</span>
+              <span class="file-path" :title="String(url)">{{ url }}</span>
+            </span>
+          </button>
+          <div class="file-card-actions">
+            <el-tooltip content="打开" placement="top">
+              <button class="image-action" type="button" aria-label="打开" @click="openFile(url)">
+                <el-icon><View /></el-icon>
+              </button>
+            </el-tooltip>
+            <el-tooltip v-if="!disabled" content="移除" placement="top">
+              <button class="image-action danger" type="button" aria-label="移除" @click="removeFile(index)">
+                <el-icon><Delete /></el-icon>
+              </button>
+            </el-tooltip>
+          </div>
+        </div>
+        <button
+          v-if="!disabled"
+          class="file-add"
+          type="button"
+          aria-label="选择多文件"
+          @click="openSelector('file', true)"
+        >
+          <el-icon><Plus /></el-icon>
+          <span>选择文件</span>
+        </button>
       </div>
     </template>
     <el-input v-else v-model="value" :disabled="disabled" clearable />
@@ -301,6 +481,12 @@ function handleSelected(files: UploadFileRow[]) {
       scene="setting"
       :current-url="String(value || '')"
       @select="handleSelected"
+    />
+    <el-image-viewer
+      v-if="previewVisible"
+      :url-list="previewUrls"
+      :initial-index="previewIndex"
+      @close="previewVisible = false"
     />
   </div>
 </template>
@@ -314,26 +500,204 @@ function handleSelected(files: UploadFileRow[]) {
   width: 100%;
 }
 
+.image-list,
 .file-list {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 8px;
 }
 
-.config-image {
-  display: inline-flex;
+.image-item,
+.image-add {
+  position: relative;
   width: 96px;
   height: 96px;
-  margin-top: 10px;
+}
+
+.image-preview {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  overflow: hidden;
   border: 1px solid var(--el-border-color-light);
   border-radius: 4px;
   background: var(--el-fill-color-light);
+  cursor: zoom-in;
 }
 
-.file-tag {
+.image-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px dashed var(--el-border-color);
+  border-radius: 4px;
+  color: var(--el-text-color-secondary);
+  background: var(--el-fill-color-lighter);
+  cursor: pointer;
+}
+
+.image-add:hover {
+  color: var(--el-color-primary);
+  border-color: var(--el-color-primary);
+}
+
+.image-add .el-icon {
+  font-size: 24px;
+}
+
+.config-image {
+  display: block;
+  width: 96px;
+  height: 96px;
+}
+
+.image-actions {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.image-item:hover .image-actions,
+.image-item:focus-within .image-actions {
+  opacity: 1;
+}
+
+.image-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--el-border-color-light);
+  border-radius: 4px;
+  color: var(--el-text-color-primary);
+  background: var(--el-bg-color-overlay);
+  cursor: pointer;
+}
+
+.image-action:hover {
+  color: var(--el-color-primary);
+  border-color: var(--el-color-primary-light-5);
+}
+
+.image-action.danger:hover {
+  color: var(--el-color-danger);
+  border-color: var(--el-color-danger-light-5);
+}
+
+.file-card-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.config-file-card,
+.file-add {
+  position: relative;
+  width: 260px;
+  height: 74px;
+  border: 1px solid var(--el-border-color-light);
+  border-radius: 4px;
+  background: var(--el-bg-color);
+}
+
+.file-main {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  padding: 10px 42px 10px 12px;
+  border: 0;
+  color: var(--el-text-color-primary);
+  background: transparent;
+  cursor: pointer;
+}
+
+.file-ext {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 40px;
+  margin-right: 8px;
+  border: 1px solid var(--el-color-primary-light-5);
+  border-radius: 4px;
+  color: var(--el-color-primary);
+  background: var(--el-color-primary-light-9);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.file-text {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.file-name {
   max-width: 100%;
-  margin: 0 6px 6px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.file-path {
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--el-text-color-secondary);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-card-actions {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.config-file-card:hover .file-card-actions,
+.config-file-card:focus-within .file-card-actions {
+  opacity: 1;
+}
+
+.file-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0;
+  border-style: dashed;
+  color: var(--el-text-color-secondary);
+  cursor: pointer;
+}
+
+.file-add:hover {
+  color: var(--el-color-primary);
+  border-color: var(--el-color-primary);
+}
+
+.file-add .el-icon {
+  font-size: 20px;
 }
 </style>
 
