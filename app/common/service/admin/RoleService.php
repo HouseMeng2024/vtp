@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace app\common\service\admin;
 
-use app\common\model\admin\AdminRole;
-use app\common\model\admin\AdminRoleMenu;
-use app\common\model\admin\AdminUserRole;
+use app\common\model\AdminRole;
+use app\common\model\AdminRoleMenu;
+use app\common\model\AdminUserRole;
 use RuntimeException;
 
 class RoleService

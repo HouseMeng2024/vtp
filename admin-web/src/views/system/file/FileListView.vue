@@ -9,7 +9,7 @@ import {
   fetchUploadFiles,
   renameUploadFile,
   type UploadFileRow,
-} from '../../../api/system'
+} from '../../../api/file'
 import { useAuthStore } from '../../../stores/auth'
 import { useAppStore } from '../../../stores/app'
 import FileSelector from '../../../components/FileSelector.vue'

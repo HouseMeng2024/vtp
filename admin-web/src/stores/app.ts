@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { fetchSiteConfig } from '../api/system'
+import { fetchSiteConfig } from '../api/config'
 import type { SiteConfigPayload, SystemConfigOptions, UploadFileOptions } from '../types/auth'
 
 export interface VisitedView {

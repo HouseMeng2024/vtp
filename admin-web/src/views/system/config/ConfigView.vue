@@ -5,7 +5,7 @@ import {
   fetchSystemConfigs,
   updateSystemConfigs,
   type SystemConfigGroup,
-} from '../../../api/system'
+} from '../../../api/config'
 import { useAppStore } from '../../../stores/app'
 import { useAuthStore } from '../../../stores/auth'
 import ConfigValueControl from './ConfigValueControl.vue'

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import type { SystemConfigItem, UploadFileRow } from '../../../api/system'
+import type { SystemConfigItem } from '../../../api/config'
+import type { UploadFileRow } from '../../../api/file'
 import FileSelector from '../../../components/FileSelector.vue'
 import { normalizeAssetUrl } from '../../../utils/asset'
 

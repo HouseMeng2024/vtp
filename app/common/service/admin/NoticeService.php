@@ -3,9 +3,9 @@ declare (strict_types = 1);
 
 namespace app\common\service\admin;
 
-use app\common\model\admin\AdminNotice;
-use app\common\model\admin\AdminNoticeRead;
-use app\common\model\admin\AdminUserRole;
+use app\common\model\AdminNotice;
+use app\common\model\AdminNoticeRead;
+use app\common\model\AdminUserRole;
 use RuntimeException;
 
 class NoticeService

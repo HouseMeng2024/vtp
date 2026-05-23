@@ -6,7 +6,6 @@ import {
   batchUpdateRoleStatus,
   createRole,
   deleteRole,
-  fetchMenus,
   fetchRoleMenus,
   fetchRoles,
   updateRole,
@@ -14,7 +13,8 @@ import {
   updateRoleStatus,
   type AdminRolePayload,
   type AdminRoleRow,
-} from '../../../api/system'
+} from '../../../api/role'
+import { fetchMenus } from '../../../api/menu'
 import { useAuthStore } from '../../../stores/auth'
 import type { AdminMenu } from '../../../types/auth'
 

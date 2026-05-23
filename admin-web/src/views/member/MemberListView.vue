@@ -13,7 +13,7 @@ import {
   updateMemberStatus,
   type MemberPayload,
   type MemberRow,
-} from '../../api/system'
+} from '../../api/member'
 import { useAuthStore } from '../../stores/auth'
 import FileSelector from '../../components/FileSelector.vue'
 

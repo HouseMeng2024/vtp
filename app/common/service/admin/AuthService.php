@@ -3,10 +3,10 @@ declare (strict_types = 1);
 
 namespace app\common\service\admin;
 
-use app\common\model\admin\AdminLoginLog;
-use app\common\model\admin\AdminMenu;
-use app\common\model\admin\AdminRole;
-use app\common\model\admin\AdminUser;
+use app\common\model\AdminLoginLog;
+use app\common\model\AdminMenu;
+use app\common\model\AdminRole;
+use app\common\model\AdminUser;
 use app\common\support\ConfigValue;
 use RuntimeException;
 use think\facade\Cache;

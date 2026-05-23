@@ -6,7 +6,7 @@ import {
   fetchUploadFiles,
   uploadFile,
   type UploadFileRow,
-} from '../api/system'
+} from '../api/file'
 import { useAppStore } from '../stores/app'
 import { normalizeAssetUrl } from '../utils/asset'
 

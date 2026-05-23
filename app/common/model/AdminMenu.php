@@ -1,7 +1,7 @@
 <?php
 declare (strict_types = 1);
 
-namespace app\common\model\admin;
+namespace app\common\model;
 
 class AdminMenu extends AdminModel
 {

@@ -3,8 +3,8 @@ declare (strict_types = 1);
 
 namespace app\common\service\admin;
 
-use app\common\model\admin\AdminLoginLog;
-use app\common\model\admin\AdminOperateLog;
+use app\common\model\AdminLoginLog;
+use app\common\model\AdminOperateLog;
 use RuntimeException;
 
 class LogService

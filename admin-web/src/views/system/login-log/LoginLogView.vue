@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { batchDeleteLoginLogs, clearLoginLogs, fetchLoginLogs, type AdminLoginLogRow } from '../../../api/system'
+import { batchDeleteLoginLogs, clearLoginLogs, fetchLoginLogs, type AdminLoginLogRow } from '../../../api/log'
 import { useAuthStore } from '../../../stores/auth'
 
 const authStore = useAuthStore()

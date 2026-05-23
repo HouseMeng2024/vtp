@@ -15,7 +15,7 @@ import {
 } from '@element-plus/icons-vue'
 import { useAppStore } from '../../stores/app'
 import { useAuthStore } from '../../stores/auth'
-import { fetchRecentNotices, readAllNotices, readNotice, type AdminNoticeRow } from '../../api/system'
+import { fetchRecentNotices, readAllNotices, readNotice, type AdminNoticeRow } from '../../api/notice'
 import { normalizeAssetUrl } from '../../utils/asset'
 import SidebarMenu from '../SidebarMenu.vue'
 

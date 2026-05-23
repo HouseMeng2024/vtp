@@ -3,7 +3,7 @@ declare (strict_types = 1);
 
 namespace app\common\service;
 
-use app\common\model\admin\AdminOperateLog;
+use app\common\model\AdminOperateLog;
 use think\Request;
 
 class OperateLogService

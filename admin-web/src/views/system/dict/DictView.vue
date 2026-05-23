@@ -16,7 +16,7 @@ import {
   type DictDataRow,
   type DictTypePayload,
   type DictTypeRow,
-} from '../../../api/system'
+} from '../../../api/dict'
 import { useAuthStore } from '../../../stores/auth'
 
 const authStore = useAuthStore()

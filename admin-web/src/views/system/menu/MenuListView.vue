@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
-import { createMenu, deleteMenu, fetchMenus, updateMenu, type AdminMenuPayload } from '../../../api/system'
+import { createMenu, deleteMenu, fetchMenus, updateMenu, type AdminMenuPayload } from '../../../api/menu'
 import { useAuthStore } from '../../../stores/auth'
 import type { AdminMenu } from '../../../types/auth'
 

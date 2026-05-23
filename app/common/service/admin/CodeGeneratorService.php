@@ -3,8 +3,8 @@ declare (strict_types = 1);
 
 namespace app\common\service\admin;
 
-use app\common\model\admin\AdminMenu;
-use app\common\model\admin\AdminRoleMenu;
+use app\common\model\AdminMenu;
+use app\common\model\AdminRoleMenu;
 use RuntimeException;
 use think\facade\Db;
 

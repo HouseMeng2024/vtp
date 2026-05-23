@@ -2,19 +2,21 @@
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import {
+  fetchRoleOptions,
+  type AdminRoleRow,
+} from '../../../api/role'
+import {
   batchDeleteUsers,
   batchUpdateUserStatus,
   createUser,
   deleteUser,
-  fetchRoleOptions,
   fetchUsers,
   forceLogoutUser,
   updateUser,
   updateUserStatus,
-  type AdminRoleRow,
   type AdminUserPayload,
   type AdminUserRow,
-} from '../../../api/system'
+} from '../../../api/user'
 import { useAuthStore } from '../../../stores/auth'
 
 const authStore = useAuthStore()

@@ -5,15 +5,19 @@ import {
   createNotice,
   deleteNotice,
   fetchNoticePage,
-  fetchRoleOptions,
-  fetchUsers,
   updateNotice,
   updateNoticeStatus,
   type AdminNoticePayload,
   type AdminNoticeRow,
+} from '../../../api/notice'
+import {
+  fetchRoleOptions,
   type AdminRoleRow,
+} from '../../../api/role'
+import {
+  fetchUsers,
   type AdminUserRow,
-} from '../../../api/system'
+} from '../../../api/user'
 import { useAuthStore } from '../../../stores/auth'
 
 const authStore = useAuthStore()

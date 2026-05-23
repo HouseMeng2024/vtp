@@ -3,7 +3,6 @@ import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import {
   cleanupGeneratedCode,
-  fetchDictTypeOptions,
   fetchRecentCodeGenerate,
   generateCode,
   previewCodeGenerate,
@@ -11,8 +10,11 @@ import {
   type CodeGeneratorPayload,
   type CodeGeneratorPreview,
   type CodeGeneratorResult,
+} from '../../../api/codeGenerator'
+import {
+  fetchDictTypeOptions,
   type DictTypeOption,
-} from '../../../api/system'
+} from '../../../api/dict'
 import { useAuthStore } from '../../../stores/auth'
 
 const authStore = useAuthStore()

@@ -10,7 +10,7 @@ import {
   restoreDatabaseBackup,
   type SystemToolBackup,
   type SystemToolOverview,
-} from '../../../api/system'
+} from '../../../api/systemTool'
 import { useAuthStore } from '../../../stores/auth'
 
 const authStore = useAuthStore()

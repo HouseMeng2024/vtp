@@ -3,7 +3,7 @@ import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, type FormInstance, type FormRules, type UploadRequestOptions } from 'element-plus'
 import { changePasswordApi, updateAvatarApi, updateProfileApi } from '../../api/auth'
-import { fetchRecentNotices, readAllNotices, readNotice, type AdminNoticeRow } from '../../api/system'
+import { fetchRecentNotices, readAllNotices, readNotice, type AdminNoticeRow } from '../../api/notice'
 import { useAuthStore } from '../../stores/auth'
 import { normalizeAssetUrl } from '../../utils/asset'
 

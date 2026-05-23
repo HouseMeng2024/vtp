@@ -15,7 +15,7 @@ import {
   type SystemConfigGroup,
   type SystemConfigItem,
   type SystemConfigTab,
-} from '../../../api/system'
+} from '../../../api/config'
 import { useAppStore } from '../../../stores/app'
 import { useAuthStore } from '../../../stores/auth'
 import ConfigValueControl from '../config/ConfigValueControl.vue'
