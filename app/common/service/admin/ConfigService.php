@@ -32,28 +32,28 @@ class ConfigService
     ];
 
     private const TYPES = [
-        'text',
-        'password',
-        'textarea',
-        'number',
-        'switch',
-        'radio',
-        'checkbox',
-        'select',
-        'select_multiple',
-        'color',
-        'date',
-        'daterange',
-        'datetime',
-        'datetimerange',
-        'time',
-        'timerange',
-        'slider',
-        'rate',
-        'image',
-        'images',
-        'file',
-        'files',
+        ['label' => '文本', 'value' => 'text'],
+        ['label' => '密码', 'value' => 'password'],
+        ['label' => '多行文本', 'value' => 'textarea'],
+        ['label' => '数字', 'value' => 'number'],
+        ['label' => '开关', 'value' => 'switch'],
+        ['label' => '单选框', 'value' => 'radio'],
+        ['label' => '多选框', 'value' => 'checkbox'],
+        ['label' => '下拉选择', 'value' => 'select'],
+        ['label' => '多选下拉', 'value' => 'select_multiple'],
+        ['label' => '颜色选择', 'value' => 'color'],
+        ['label' => '日期', 'value' => 'date'],
+        ['label' => '日期范围', 'value' => 'daterange'],
+        ['label' => '日期时间', 'value' => 'datetime'],
+        ['label' => '日期时间范围', 'value' => 'datetimerange'],
+        ['label' => '时间', 'value' => 'time'],
+        ['label' => '时间范围', 'value' => 'timerange'],
+        ['label' => '滑块', 'value' => 'slider'],
+        ['label' => '评分', 'value' => 'rate'],
+        ['label' => '图片', 'value' => 'image'],
+        ['label' => '多图', 'value' => 'images'],
+        ['label' => '文件', 'value' => 'file'],
+        ['label' => '多文件', 'value' => 'files'],
     ];
 
     /**
@@ -61,8 +61,6 @@ class ConfigService
      */
     public function groups(): array
     {
-        $this->ensureDefaults();
-
         $groups = SystemConfigGroup::where([])
             ->order('sort', 'asc')
             ->order('id', 'asc')
@@ -117,8 +115,6 @@ class ConfigService
      */
     public function save(array $values): array
     {
-        $this->ensureDefaults();
-
         foreach ($values as $id => $value) {
             $config = SystemConfig::find((int) $id);
             if (!$config) {
@@ -137,12 +133,23 @@ class ConfigService
      */
     public function site(): array
     {
-        $this->ensureDefaults();
+        $admin = config('admin', []);
 
         return [
-            'admin_title'      => (string) ConfigValue::getInGroups('title', ['admin'], 'VTP Admin'),
-            'site_logo'        => (string) ConfigValue::getInGroups('logo', ['admin'], ''),
-            'site_description' => (string) ConfigValue::getInGroups('description', ['admin'], '通用后台管理系统'),
+            'admin_title'      => (string) ($admin['title'] ?? 'VTP Admin'),
+            'site_logo'        => (string) ($admin['logo'] ?? ''),
+            'site_description' => (string) ($admin['description'] ?? '通用后台管理系统'),
+        ];
+    }
+
+    /**
+     * 获取系统配置管理可用选项。
+     */
+    public function options(): array
+    {
+        return [
+            'types'        => self::TYPES,
+            'option_types' => ['radio', 'checkbox', 'select', 'select_multiple'],
         ];
     }
 
@@ -151,7 +158,6 @@ class ConfigService
      */
     public function createGroup(array $payload): array
     {
-        $this->ensureDefaults();
         $key = $this->validKey((string) ($payload['key'] ?? ''));
         $this->assertGroupKeyAvailable($key);
 
@@ -176,7 +182,6 @@ class ConfigService
      */
     public function updateGroup(int $id, array $payload): array
     {
-        $this->ensureDefaults();
         $group = $this->findGroup($id);
         $data = [
             'title'  => $this->validTitle((string) ($payload['title'] ?? $group->title)),
@@ -204,7 +209,6 @@ class ConfigService
      */
     public function deleteGroup(int $id): array
     {
-        $this->ensureDefaults();
         $group = $this->findGroup($id);
         if ((int) $group->is_system === 1) {
             throw new RuntimeException('系统分组不可删除');
@@ -231,7 +235,6 @@ class ConfigService
      */
     public function createTab(array $payload): array
     {
-        $this->ensureDefaults();
         $group = $this->findGroup((int) ($payload['group_id'] ?? 0));
         $key = $this->validKey((string) ($payload['key'] ?? ''));
         $exists = SystemConfigTab::where('group_id', $group->id)->where('key', $key)->find();
@@ -257,7 +260,6 @@ class ConfigService
      */
     public function updateTab(int $id, array $payload): array
     {
-        $this->ensureDefaults();
         $tab = $this->findTab($id);
         $data = [
             'title'  => $this->validTitle((string) ($payload['title'] ?? $tab->title)),
@@ -287,7 +289,6 @@ class ConfigService
      */
     public function deleteTab(int $id): array
     {
-        $this->ensureDefaults();
         $tab = $this->findTab($id);
         if ((int) $tab->is_system === 1) {
             throw new RuntimeException('系统标签不可删除');
@@ -310,7 +311,6 @@ class ConfigService
      */
     public function createItem(array $payload): array
     {
-        $this->ensureDefaults();
         $tab = $this->findTab((int) ($payload['tab_id'] ?? 0));
         $key = $this->validKey((string) ($payload['key'] ?? ''));
         if (SystemConfig::where('group_id', $tab->group_id)->where('key', $key)->find()) {
@@ -342,7 +342,6 @@ class ConfigService
      */
     public function updateItem(int $id, array $payload): array
     {
-        $this->ensureDefaults();
         $item = $this->findItem($id);
         $isSystem = (int) $item->is_system === 1;
         $type = $isSystem ? (string) $item->type : $this->validType((string) ($payload['type'] ?? $item->type));
@@ -383,7 +382,6 @@ class ConfigService
      */
     public function deleteItem(int $id): array
     {
-        $this->ensureDefaults();
         $item = $this->findItem($id);
         if ((int) $item->is_system === 1) {
             throw new RuntimeException('系统配置项不可删除');
@@ -392,157 +390,6 @@ class ConfigService
         $item->delete();
         ConfigValue::clear();
         return $this->groups();
-    }
-
-    /**
-     * 初始化默认项目配置。
-     */
-    private function ensureDefaults(): void
-    {
-        $groups = [];
-        $tabs = [];
-
-        foreach ($this->groupsConfig() as $groupConfig) {
-            $groups[$groupConfig['key']] = $this->ensureGroup($groupConfig['key'], $groupConfig['title'], $groupConfig['sort'], 1);
-        }
-
-        foreach ($this->tabs() as $tab) {
-            $group = $groups[$tab['group']] ?? null;
-            if (!$group) {
-                continue;
-            }
-
-            $tabs[$tab['key']] = $this->ensureTab((int) $group->id, $tab['key'], $tab['title'], $tab['sort'], 1);
-        }
-
-        foreach ($this->definitions() as $definition) {
-            $tab = $tabs[$definition['tab']] ?? null;
-            if (!$tab) {
-                continue;
-            }
-
-            $config = SystemConfig::where('group_id', $tab->group_id)->where('key', $definition['key'])->find();
-            $data = [
-                'group_id'  => $tab->group_id,
-                'tab_id'    => $tab->id,
-                'group'     => $tab->key,
-                'type'      => $definition['type'],
-                'name'      => $definition['name'],
-                'remark'    => $definition['remark'],
-                'options'   => $definition['options'] ?? '',
-                'sort'      => $definition['sort'],
-                'is_system' => 1,
-                'status'    => 1,
-            ];
-
-            if ($config) {
-                $config->save($data);
-                continue;
-            }
-
-            SystemConfig::create(array_merge($data, [
-                'key'   => $definition['key'],
-                'value' => $definition['value'],
-            ]));
-        }
-    }
-
-    /**
-     * 初始化或更新内置分组。
-     */
-    private function ensureGroup(string $key, string $title, int $sort, int $isSystem): SystemConfigGroup
-    {
-        $group = SystemConfigGroup::where('key', $key)->find();
-        if ($group) {
-            $group->save(['title' => $title, 'sort' => $sort, 'is_system' => $isSystem, 'status' => 1]);
-            return $group;
-        }
-
-        return SystemConfigGroup::create([
-            'key'       => $key,
-            'title'     => $title,
-            'sort'      => $sort,
-            'is_system' => $isSystem,
-            'status'    => 1,
-        ]);
-    }
-
-    /**
-     * 初始化或更新内置标签页。
-     */
-    private function ensureTab(int $groupId, string $key, string $title, int $sort, int $isSystem): SystemConfigTab
-    {
-        $tab = SystemConfigTab::where('group_id', $groupId)->where('key', $key)->find();
-        if ($tab) {
-            $tab->save(['title' => $title, 'sort' => $sort, 'is_system' => $isSystem, 'status' => 1]);
-            return $tab;
-        }
-
-        return SystemConfigTab::create([
-            'group_id'  => $groupId,
-            'key'       => $key,
-            'title'     => $title,
-            'sort'      => $sort,
-            'is_system' => $isSystem,
-            'status'    => 1,
-        ]);
-    }
-
-    /**
-     * 获取默认配置分组。
-     */
-    private function groupsConfig(): array
-    {
-        return [
-            ['key' => 'system', 'title' => '系统配置', 'sort' => 100],
-            ['key' => 'admin', 'title' => '后台配置', 'sort' => 200],
-            ['key' => 'index', 'title' => '前台配置', 'sort' => 300],
-        ];
-    }
-
-    /**
-     * 获取默认配置标签页。
-     */
-    private function tabs(): array
-    {
-        return [
-            ['group' => 'system', 'key' => 'system_basic', 'title' => '基础规范', 'sort' => 100],
-            ['group' => 'system', 'key' => 'system_upload', 'title' => '上传规范', 'sort' => 200],
-            ['group' => 'system', 'key' => 'system_security', 'title' => '安全规范', 'sort' => 300],
-            ['group' => 'admin', 'key' => 'admin_basic', 'title' => '后台基础', 'sort' => 100],
-            ['group' => 'admin', 'key' => 'admin_login', 'title' => '登录安全', 'sort' => 200],
-            ['group' => 'index', 'key' => 'index_site', 'title' => '网站信息', 'sort' => 100],
-            ['group' => 'index', 'key' => 'index_seo', 'title' => 'SEO 配置', 'sort' => 200],
-        ];
-    }
-
-    /**
-     * 获取默认配置定义。
-     */
-    private function definitions(): array
-    {
-        return [
-            ['tab' => 'system_upload', 'key' => 'upload_max_size', 'value' => '10', 'type' => 'number', 'name' => '上传大小限制', 'remark' => '单位 MB，所有模块上传默认遵守', 'sort' => 100],
-            ['tab' => 'system_upload', 'key' => 'upload_ext', 'value' => 'jpg,jpeg,png,gif,webp,pdf,doc,docx,xls,xlsx,zip', 'type' => 'text', 'name' => '允许扩展名', 'remark' => '多个扩展名用英文逗号分隔', 'sort' => 101],
-
-            ['tab' => 'system_security', 'key' => 'password_min_length', 'value' => '6', 'type' => 'number', 'name' => '密码最小长度', 'remark' => '系统账号类密码最小长度', 'sort' => 100],
-            ['tab' => 'system_security', 'key' => 'login_max_attempts', 'value' => '5', 'type' => 'number', 'name' => '登录失败次数', 'remark' => '达到次数后临时锁定', 'sort' => 101],
-            ['tab' => 'system_security', 'key' => 'login_lock_seconds', 'value' => '900', 'type' => 'number', 'name' => '登录锁定时长', 'remark' => '单位秒', 'sort' => 102],
-
-            ['tab' => 'admin_basic', 'key' => 'title', 'value' => 'VTP Admin', 'type' => 'text', 'name' => '后台标题', 'remark' => '后台浏览器标题和顶部品牌名称', 'sort' => 100],
-            ['tab' => 'admin_basic', 'key' => 'logo', 'value' => '', 'type' => 'image', 'name' => '后台 Logo', 'remark' => '后台登录页和顶部品牌 Logo', 'sort' => 101],
-            ['tab' => 'admin_basic', 'key' => 'description', 'value' => '通用后台管理系统', 'type' => 'textarea', 'name' => '后台描述', 'remark' => '后台登录页展示说明', 'sort' => 102],
-
-            ['tab' => 'admin_login', 'key' => 'token_expire', 'value' => '86400', 'type' => 'number', 'name' => '后台登录有效期', 'remark' => '单位秒，仅作用于 admin 模块', 'sort' => 100],
-            ['tab' => 'admin_login', 'key' => 'captcha_enabled', 'value' => '0', 'type' => 'switch', 'name' => '后台登录验证码', 'remark' => '开启后后台登录需要输入验证码', 'sort' => 101],
-
-            ['tab' => 'index_site', 'key' => 'title', 'value' => 'VTP', 'type' => 'text', 'name' => '网站标题', 'remark' => '前台 index 模块默认网站标题', 'sort' => 100],
-            ['tab' => 'index_site', 'key' => 'logo', 'value' => '', 'type' => 'image', 'name' => '网站 Logo', 'remark' => '前台站点 Logo', 'sort' => 101],
-
-            ['tab' => 'index_seo', 'key' => 'seo_title', 'value' => 'VTP', 'type' => 'text', 'name' => 'SEO 标题', 'remark' => '前台默认 SEO 标题', 'sort' => 100],
-            ['tab' => 'index_seo', 'key' => 'seo_keywords', 'value' => '', 'type' => 'text', 'name' => 'SEO 关键词', 'remark' => '多个关键词用英文逗号分隔', 'sort' => 101],
-            ['tab' => 'index_seo', 'key' => 'seo_description', 'value' => '', 'type' => 'textarea', 'name' => 'SEO 描述', 'remark' => '前台页面默认 SEO 描述', 'sort' => 102],
-        ];
     }
 
     /**
@@ -660,7 +507,9 @@ class ConfigService
 
     private function validType(string $type): string
     {
-        if (!in_array($type, self::TYPES, true)) {
+        $values = array_column(self::TYPES, 'value');
+
+        if (!in_array($type, $values, true)) {
             throw new RuntimeException('配置类型不支持');
         }
         return $type;

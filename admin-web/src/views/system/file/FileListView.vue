@@ -11,9 +11,12 @@ import {
   type UploadFileRow,
 } from '../../../api/system'
 import { useAuthStore } from '../../../stores/auth'
+import { useAppStore } from '../../../stores/app'
 import FileSelector from '../../../components/FileSelector.vue'
+import { normalizeAssetUrl } from '../../../utils/asset'
 
 const authStore = useAuthStore()
+const appStore = useAppStore()
 const loading = ref(false)
 const selectorVisible = ref(false)
 const previewVisible = ref(false)
@@ -32,15 +35,9 @@ const query = reactive({
 const canUpload = computed(() => authStore.hasPermission('admin:file:upload'))
 const canDelete = computed(() => authStore.hasPermission('admin:file:delete'))
 const canUpdate = computed(() => authStore.hasPermission('admin:file:update'))
-const backendOrigin = import.meta.env.DEV ? 'http://127.0.0.1:8000' : ''
-const extensionOptions = ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx', 'xls', 'xlsx']
-const categoryOptions = [
-  { label: '图片', value: 'image' },
-  { label: '文档', value: 'document' },
-  { label: '表格', value: 'sheet' },
-  { label: '压缩包', value: 'archive' },
-  { label: '其他', value: 'other' },
-]
+const extensionOptions = computed(() => appStore.uploadFileOptions.extensions)
+const imageExtensions = computed(() => appStore.uploadFileOptions.image_extensions)
+const categoryOptions = computed(() => appStore.uploadFileOptions.categories)
 
 async function loadData() {
   loading.value = true
@@ -81,15 +78,11 @@ function formatSize(size: number) {
 }
 
 function isImage(row: UploadFileRow) {
-  return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'].includes(row.extension.toLowerCase())
+  return row.category === 'image' || imageExtensions.value.includes(row.extension.toLowerCase())
 }
 
 function fileUrl(row: UploadFileRow) {
-  if (/^https?:\/\//i.test(row.url)) {
-    return row.url
-  }
-
-  return `${backendOrigin}${row.url}`
+  return normalizeAssetUrl(row.url)
 }
 
 function handleUploaded() {
@@ -150,7 +143,9 @@ async function copyLink(row: UploadFileRow) {
   ElMessage.success('链接已复制')
 }
 
-onMounted(loadData)
+onMounted(() => {
+  loadData()
+})
 </script>
 
 <template>

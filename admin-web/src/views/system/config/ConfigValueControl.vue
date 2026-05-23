@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import type { SystemConfigItem, UploadFileRow } from '../../../api/system'
 import FileSelector from '../../../components/FileSelector.vue'
+import { normalizeAssetUrl } from '../../../utils/asset'
 
 type ConfigValue = string | number | Array<string | number>
 
@@ -19,7 +20,6 @@ const emit = defineEmits<{
 const selectorVisible = ref(false)
 const selectorType = ref<'image' | 'file'>('image')
 const selectorMultiple = ref(false)
-const backendOrigin = import.meta.env.DEV ? 'http://127.0.0.1:8000' : ''
 const colorPredefine = [
   '#409EFF',
   '#1F75CB',
@@ -95,16 +95,6 @@ function parseOptions(raw: string) {
         label: (labelPart || valuePart || '').trim(),
       }
     })
-}
-
-function fileUrl(url: string | number) {
-  const valueUrl = String(url || '')
-
-  if (!valueUrl || /^https?:\/\//i.test(valueUrl) || valueUrl.startsWith('data:')) {
-    return valueUrl
-  }
-
-  return `${backendOrigin}${valueUrl}`
 }
 
 function openSelector(type: 'image' | 'file', multiple: boolean) {
@@ -272,7 +262,7 @@ function handleSelected(files: UploadFileRow[]) {
           <el-button :disabled="disabled" @click="openSelector('image', false)">选择</el-button>
         </template>
       </el-input>
-      <el-image v-if="value" class="config-image" :src="fileUrl(String(value))" fit="contain" />
+      <el-image v-if="value" class="config-image" :src="normalizeAssetUrl(String(value))" fit="contain" />
     </template>
     <template v-else-if="item.type === 'images'">
       <div class="file-list">
@@ -280,7 +270,7 @@ function handleSelected(files: UploadFileRow[]) {
           v-for="url in arrayValue"
           :key="String(url)"
           class="config-image"
-          :src="fileUrl(url)"
+          :src="normalizeAssetUrl(String(url))"
           fit="contain"
         />
       </div>

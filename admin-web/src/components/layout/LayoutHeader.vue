@@ -16,6 +16,7 @@ import {
 import { useAppStore } from '../../stores/app'
 import { useAuthStore } from '../../stores/auth'
 import { fetchRecentNotices, readAllNotices, readNotice, type AdminNoticeRow } from '../../api/system'
+import { normalizeAssetUrl } from '../../utils/asset'
 import SidebarMenu from '../SidebarMenu.vue'
 
 defineEmits<{
@@ -26,7 +27,6 @@ const appStore = useAppStore()
 const authStore = useAuthStore()
 const router = useRouter()
 const route = useRoute()
-const backendOrigin = import.meta.env.DEV ? 'http://127.0.0.1:8000' : ''
 const notices = ref<AdminNoticeRow[]>([])
 const unreadCount = ref(0)
 const popupStorageKey = 'vtp_popped_notice_ids'
@@ -51,26 +51,6 @@ async function handleLogout() {
 
 function openProfile() {
   router.push('/profile')
-}
-
-function avatarUrl(url = '') {
-  if (!url || /^https?:\/\//i.test(url)) {
-    return url
-  }
-
-  return `${backendOrigin}${url}`
-}
-
-function logoUrl(url = '') {
-  if (!url || /^https?:\/\//i.test(url) || url.startsWith('data:')) {
-    return url
-  }
-
-  if (url === '/logo.svg') {
-    return url
-  }
-
-  return `${backendOrigin}${url}`
 }
 
 function refreshPage() {
@@ -144,7 +124,7 @@ onMounted(() => {
         <img
           v-if="appStore.siteConfig.siteLogo"
           class="pure-logo-image"
-          :src="logoUrl(appStore.siteConfig.siteLogo)"
+          :src="normalizeAssetUrl(appStore.siteConfig.siteLogo)"
           alt="logo"
         />
         <div v-else class="pure-logo-mark">
@@ -232,7 +212,7 @@ onMounted(() => {
 
       <el-dropdown trigger="click">
         <button class="pure-user" type="button">
-          <el-avatar v-if="authStore.user?.avatar" :size="28" :src="avatarUrl(authStore.user.avatar)" />
+          <el-avatar v-if="authStore.user?.avatar" :size="28" :src="normalizeAssetUrl(authStore.user.avatar)" />
           <el-avatar v-else :size="28">
             {{ (authStore.user?.nickname || authStore.user?.username || 'A').slice(0, 1) }}
           </el-avatar>

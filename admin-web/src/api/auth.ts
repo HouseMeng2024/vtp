@@ -1,10 +1,11 @@
 import request from '../utils/request'
-import type { AdminMenu, AdminUser, LoginResult } from '../types/auth'
+import type { AdminMenu, AdminUser, BackendContext, LoginResult, SiteConfigPayload } from '../types/auth'
 
 export interface CaptchaResult {
   enabled: boolean
   key: string
   image: string
+  site_config: SiteConfigPayload
 }
 
 export function loginApi(data: { username: string; password: string; captcha_key?: string; captcha_code?: string }) {
@@ -15,8 +16,8 @@ export function captchaApi() {
   return request.get<CaptchaResult>('/auth/captcha').then((response) => response.data)
 }
 
-export function profileApi() {
-  return request.get<AdminUser>('/auth/profile').then((response) => response.data)
+export function contextApi() {
+  return request.get<BackendContext>('/auth/context').then((response) => response.data)
 }
 
 export function updateProfileApi(data: { nickname: string; mobile: string; email: string }) {

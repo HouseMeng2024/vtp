@@ -1,5 +1,5 @@
 import request from '../utils/request'
-import type { AdminMenu } from '../types/auth'
+import type { AdminMenu, SiteConfigPayload } from '../types/auth'
 
 export interface PageResult<T> {
   data: T[]
@@ -192,12 +192,6 @@ export interface SystemConfigItemPayload {
   options: string
   sort: number
   status: number
-}
-
-export interface SiteConfigPayload {
-  admin_title: string
-  site_logo: string
-  site_description: string
 }
 
 export interface UploadFileRow {

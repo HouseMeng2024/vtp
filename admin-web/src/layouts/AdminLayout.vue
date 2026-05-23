@@ -35,8 +35,6 @@ watch(
   () => appStore.applyProjectConfig(),
   { deep: true, immediate: true },
 )
-
-appStore.loadSiteConfig().catch(() => undefined)
 </script>
 
 <template>

@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { fetchSiteConfig } from '../api/system'
+import type { SiteConfigPayload, SystemConfigOptions, UploadFileOptions } from '../types/auth'
 
 export interface VisitedView {
   path: string
@@ -49,6 +50,19 @@ const defaultSiteConfig: SiteConfig = {
   siteDescription: '通用后台管理系统',
 }
 
+const defaultSystemConfigOptions: SystemConfigOptions = {
+  types: [],
+  option_types: [],
+}
+
+const defaultUploadFileOptions: UploadFileOptions = {
+  extensions: [],
+  image_extensions: [],
+  categories: [],
+  accept: '',
+  image_accept: '',
+}
+
 function loadProjectConfig(): ProjectConfig {
   const config = localStorage.getItem(CONFIG_KEY)
 
@@ -89,6 +103,8 @@ export const useAppStore = defineStore('app', {
     visitedViews: [{ path: '/dashboard', title: '控制台' }] as VisitedView[],
     projectConfig: loadProjectConfig(),
     siteConfig: loadCachedSiteConfig(),
+    systemConfigOptions: { ...defaultSystemConfigOptions },
+    uploadFileOptions: { ...defaultUploadFileOptions },
   }),
   actions: {
     toggleSidebar() {
@@ -136,6 +152,9 @@ export const useAppStore = defineStore('app', {
     async loadSiteConfig() {
       const values = await fetchSiteConfig()
 
+      this.setSiteConfig(values)
+    },
+    setSiteConfig(values: SiteConfigPayload) {
       this.siteConfig = {
         adminTitle: values.admin_title || defaultSiteConfig.adminTitle,
         siteLogo: values.site_logo || defaultSiteConfig.siteLogo,
@@ -144,6 +163,10 @@ export const useAppStore = defineStore('app', {
 
       localStorage.setItem(SITE_CONFIG_KEY, JSON.stringify(this.siteConfig))
       document.title = this.siteConfig.adminTitle
+    },
+    setBackendOptions(configOptions: SystemConfigOptions, fileOptions: UploadFileOptions) {
+      this.systemConfigOptions = configOptions
+      this.uploadFileOptions = fileOptions
     },
   },
 })

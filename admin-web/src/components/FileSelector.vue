@@ -7,6 +7,8 @@ import {
   uploadFile,
   type UploadFileRow,
 } from '../api/system'
+import { useAppStore } from '../stores/app'
+import { normalizeAssetUrl } from '../utils/asset'
 
 const props = withDefaults(defineProps<{
   modelValue: boolean
@@ -26,6 +28,7 @@ const emit = defineEmits<{
   'update:modelValue': [value: boolean]
   select: [files: UploadFileRow[]]
 }>()
+const appStore = useAppStore()
 const visible = computed({
   get: () => props.modelValue,
   set: (value) => emit('update:modelValue', value),
@@ -42,17 +45,11 @@ const query = reactive({
   category: '',
   scene: props.scene,
 })
-const backendOrigin = import.meta.env.DEV ? 'http://127.0.0.1:8000' : ''
-const categoryOptions = [
-  { label: '图片', value: 'image' },
-  { label: '文档', value: 'document' },
-  { label: '表格', value: 'sheet' },
-  { label: '压缩包', value: 'archive' },
-  { label: '其他', value: 'other' },
-]
+const categoryOptions = computed(() => appStore.uploadFileOptions.categories)
+const imageExtensions = computed(() => appStore.uploadFileOptions.image_extensions)
 const uploadAccept = computed(() => props.acceptType === 'image'
-  ? '.jpg,.jpeg,.png,.gif,.webp,.svg'
-  : '.jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.xls,.xlsx')
+  ? appStore.uploadFileOptions.image_accept
+  : appStore.uploadFileOptions.accept)
 
 watch(visible, (value) => {
   if (value) {
@@ -65,15 +62,11 @@ watch(visible, (value) => {
 })
 
 function fileUrl(row: UploadFileRow) {
-  if (/^https?:\/\//i.test(row.url)) {
-    return row.url
-  }
-
-  return `${backendOrigin}${row.url}`
+  return normalizeAssetUrl(row.url)
 }
 
 function isImage(row: UploadFileRow) {
-  return row.category === 'image' || ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'].includes(row.extension.toLowerCase())
+  return row.category === 'image' || imageExtensions.value.includes(row.extension.toLowerCase())
 }
 
 function formatSize(size: number) {

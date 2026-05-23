@@ -5,6 +5,8 @@ namespace app\admin\controller;
 
 use app\common\base\AdminBase;
 use app\common\service\admin\AuthService;
+use app\common\service\admin\ConfigService;
+use app\common\service\admin\FileService;
 use app\common\service\admin\MenuService;
 use app\common\support\ApiResponse;
 use RuntimeException;
@@ -18,6 +20,13 @@ class Auth extends AdminBase
     public function login(): Response
     {
         $data = $this->request->only(['username', 'password', 'captcha_key', 'captcha_code'], 'post');
+
+        if (!$this->isScalarInput($data['username'] ?? '') || !$this->isScalarInput($data['password'] ?? '')
+            || !$this->isScalarInput($data['captcha_key'] ?? '') || !$this->isScalarInput($data['captcha_code'] ?? '')
+        ) {
+            return ApiResponse::fail('请求参数格式不正确');
+        }
+
         $username = trim((string) ($data['username'] ?? ''));
         $password = (string) ($data['password'] ?? '');
 
@@ -26,16 +35,26 @@ class Auth extends AdminBase
         }
 
         try {
-            return ApiResponse::success((new AuthService())->login(
+            $result = (new AuthService())->login(
                 $username,
                 $password,
                 $this->request,
                 (string) ($data['captcha_key'] ?? ''),
                 (string) ($data['captcha_code'] ?? '')
-            ));
+            );
+
+            return ApiResponse::success(array_merge($result, $this->backendContext($result['user'] ?? [])));
         } catch (RuntimeException $exception) {
             return ApiResponse::fail($exception->getMessage());
         }
+    }
+
+    /**
+     * 判断登录入参是否为可转字符串的标量值。
+     */
+    private function isScalarInput(mixed $value): bool
+    {
+        return is_scalar($value) || $value === null;
     }
 
     /**
@@ -43,7 +62,10 @@ class Auth extends AdminBase
      */
     public function captcha(): Response
     {
-        return ApiResponse::success((new AuthService())->captcha());
+        $captcha = (new AuthService())->captcha();
+        $captcha['site_config'] = (new ConfigService())->site();
+
+        return ApiResponse::success($captcha);
     }
 
     /**
@@ -52,6 +74,14 @@ class Auth extends AdminBase
     public function profile(): Response
     {
         return ApiResponse::success($this->adminUser());
+    }
+
+    /**
+     * 获取后台首屏上下文。
+     */
+    public function context(): Response
+    {
+        return ApiResponse::success($this->backendContext($this->adminUser()));
     }
 
     /**
@@ -114,5 +144,19 @@ class Auth extends AdminBase
     public function menus(): Response
     {
         return ApiResponse::success((new MenuService())->tree($this->adminUser()));
+    }
+
+    /**
+     * 组装后台首屏需要的公共上下文。
+     */
+    private function backendContext(array $user): array
+    {
+        return [
+            'user'           => $user,
+            'menus'          => (new MenuService())->tree($user),
+            'site_config'    => (new ConfigService())->site(),
+            'config_options' => (new ConfigService())->options(),
+            'file_options'   => (new FileService())->options(),
+        ];
     }
 }

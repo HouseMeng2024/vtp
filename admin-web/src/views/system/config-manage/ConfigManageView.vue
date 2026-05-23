@@ -16,10 +16,12 @@ import {
   type SystemConfigItem,
   type SystemConfigTab,
 } from '../../../api/system'
+import { useAppStore } from '../../../stores/app'
 import { useAuthStore } from '../../../stores/auth'
 import ConfigValueControl from '../config/ConfigValueControl.vue'
 
 const authStore = useAuthStore()
+const appStore = useAppStore()
 const loading = ref(false)
 const groups = ref<SystemConfigGroup[]>([])
 const groupManageVisible = ref(false)
@@ -42,31 +44,8 @@ const filter = reactive({
 const canCreate = computed(() => authStore.hasPermission('admin:config-manage:create'))
 const canUpdate = computed(() => authStore.hasPermission('admin:config-manage:update'))
 const canDelete = computed(() => authStore.hasPermission('admin:config-manage:delete'))
-const typeOptions = [
-  { label: '文本', value: 'text' },
-  { label: '密码', value: 'password' },
-  { label: '多行文本', value: 'textarea' },
-  { label: '数字', value: 'number' },
-  { label: '开关', value: 'switch' },
-  { label: '单选框', value: 'radio' },
-  { label: '多选框', value: 'checkbox' },
-  { label: '下拉选择', value: 'select' },
-  { label: '多选下拉', value: 'select_multiple' },
-  { label: '颜色选择', value: 'color' },
-  { label: '日期', value: 'date' },
-  { label: '日期范围', value: 'daterange' },
-  { label: '日期时间', value: 'datetime' },
-  { label: '日期时间范围', value: 'datetimerange' },
-  { label: '时间', value: 'time' },
-  { label: '时间范围', value: 'timerange' },
-  { label: '滑块', value: 'slider' },
-  { label: '评分', value: 'rate' },
-  { label: '图片', value: 'image' },
-  { label: '多图', value: 'images' },
-  { label: '文件', value: 'file' },
-  { label: '多文件', value: 'files' },
-]
-const optionTypes = ['radio', 'checkbox', 'select', 'select_multiple']
+const typeOptions = computed(() => appStore.systemConfigOptions.types)
+const optionTypes = computed(() => appStore.systemConfigOptions.option_types)
 
 const groupForm = reactive({
   key: '',
@@ -150,7 +129,7 @@ const defaultValueItem = computed<SystemConfigItem>(() => ({
   type: itemForm.type,
   name: itemForm.name || '默认值',
   remark: '',
-  options: optionTypes.includes(itemForm.type) ? stringifyOptions() : itemForm.options,
+  options: optionTypes.value.includes(itemForm.type) ? stringifyOptions() : itemForm.options,
   sort: itemForm.sort,
   is_system: 0,
   status: itemForm.status,
@@ -180,7 +159,7 @@ function applyGroups(nextGroups: SystemConfigGroup[]) {
 }
 
 function typeLabel(type: string) {
-  return typeOptions.find((item) => item.value === type)?.label || type
+  return typeOptions.value.find((item) => item.value === type)?.label || type
 }
 
 function parseOptions(raw: string) {
@@ -234,7 +213,7 @@ function removeOptionRow(index: number) {
 }
 
 function validateOptions() {
-  if (!optionTypes.includes(itemForm.type)) {
+  if (!optionTypes.value.includes(itemForm.type)) {
     itemForm.options = ''
     return true
   }
@@ -418,7 +397,9 @@ async function handleDeleteItem(item: SystemConfigItem) {
   ElMessage.success('删除成功')
 }
 
-onMounted(loadData)
+onMounted(() => {
+  loadData()
+})
 </script>
 
 <template>

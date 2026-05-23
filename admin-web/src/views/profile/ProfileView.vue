@@ -5,6 +5,7 @@ import { ElMessage, type FormInstance, type FormRules, type UploadRequestOptions
 import { changePasswordApi, updateAvatarApi, updateProfileApi } from '../../api/auth'
 import { fetchRecentNotices, readAllNotices, readNotice, type AdminNoticeRow } from '../../api/system'
 import { useAuthStore } from '../../stores/auth'
+import { normalizeAssetUrl } from '../../utils/asset'
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -36,16 +37,6 @@ const passwordRules: FormRules = {
   new_password: [{ required: true, min: 6, message: '新密码至少 6 位', trigger: 'blur' }],
   confirm_password: [{ required: true, message: '请再次输入新密码', trigger: 'blur' }],
 }
-const backendOrigin = import.meta.env.DEV ? 'http://127.0.0.1:8000' : ''
-
-function avatarUrl(url = '') {
-  if (!url || /^https?:\/\//i.test(url)) {
-    return url
-  }
-
-  return `${backendOrigin}${url}`
-}
-
 async function submitProfile() {
   await profileFormRef.value?.validate()
   savingProfile.value = true
@@ -142,7 +133,7 @@ onMounted(() => {
           :http-request="handleAvatarUpload"
           :disabled="uploading"
         >
-          <el-avatar :size="72" :src="avatarUrl(authStore.user?.avatar)">
+          <el-avatar :size="72" :src="normalizeAssetUrl(authStore.user?.avatar)">
             {{ (authStore.user?.nickname || authStore.user?.username || 'A').slice(0, 1) }}
           </el-avatar>
           <div class="avatar-upload-info">

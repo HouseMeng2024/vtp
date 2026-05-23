@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
-import { loginApi, logoutApi, menuTreeApi, profileApi } from '../api/auth'
-import type { AdminMenu, AdminUser } from '../types/auth'
+import { contextApi, loginApi, logoutApi, menuTreeApi } from '../api/auth'
+import { useAppStore } from './app'
+import type { AdminMenu, AdminUser, BackendContext } from '../types/auth'
 
 const TOKEN_KEY = 'admin_token'
 
@@ -29,17 +30,23 @@ export const useAuthStore = defineStore('auth', {
         captcha_code: captchaCode,
       })
       this.token = data.token
-      this.user = data.user
       localStorage.setItem(TOKEN_KEY, data.token)
+      this.applyContext(data)
     },
-    async fetchProfile() {
-      this.user = await profileApi()
+    async fetchContext() {
+      this.applyContext(await contextApi())
     },
     setUser(user: AdminUser) {
       this.user = user
     },
     async fetchMenus() {
       this.menus = await menuTreeApi()
+    },
+    applyContext(context: BackendContext) {
+      this.user = context.user
+      this.menus = context.menus
+      useAppStore().setSiteConfig(context.site_config)
+      useAppStore().setBackendOptions(context.config_options, context.file_options)
     },
     async logout() {
       if (this.token) {

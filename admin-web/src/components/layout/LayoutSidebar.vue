@@ -4,25 +4,13 @@ import { House } from '@element-plus/icons-vue'
 import { useRoute } from 'vue-router'
 import { useAppStore } from '../../stores/app'
 import { useAuthStore } from '../../stores/auth'
+import { normalizeAssetUrl } from '../../utils/asset'
 import SidebarMenu from '../SidebarMenu.vue'
 
 const appStore = useAppStore()
 const authStore = useAuthStore()
 const route = useRoute()
 const sideWidth = computed(() => (appStore.sidebarCollapsed ? '64px' : '220px'))
-const backendOrigin = import.meta.env.DEV ? 'http://127.0.0.1:8000' : ''
-
-function logoUrl(url = '') {
-  if (!url || /^https?:\/\//i.test(url) || url.startsWith('data:')) {
-    return url
-  }
-
-  if (url === '/logo.svg') {
-    return url
-  }
-
-  return `${backendOrigin}${url}`
-}
 </script>
 
 <template>
@@ -35,7 +23,7 @@ function logoUrl(url = '') {
       <img
         v-if="appStore.siteConfig.siteLogo"
         class="pure-logo-image"
-        :src="logoUrl(appStore.siteConfig.siteLogo)"
+        :src="normalizeAssetUrl(appStore.siteConfig.siteLogo)"
         alt="logo"
       />
       <div v-else class="pure-logo-mark">

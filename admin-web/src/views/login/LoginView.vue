@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { captchaApi } from '../../api/auth'
 import { useAppStore } from '../../stores/app'
 import { useAuthStore } from '../../stores/auth'
+import { normalizeAssetUrl } from '../../utils/asset'
 
 const route = useRoute()
 const router = useRouter()
@@ -12,7 +13,6 @@ const appStore = useAppStore()
 const loading = ref(false)
 const captchaEnabled = ref(false)
 const captchaImage = ref('')
-const backendOrigin = import.meta.env.DEV ? 'http://127.0.0.1:8000' : ''
 const form = reactive({
   username: '',
   password: '',
@@ -26,18 +26,7 @@ async function loadCaptcha() {
   form.captcha_key = data.key
   form.captcha_code = ''
   captchaImage.value = data.image
-}
-
-function logoUrl(url = '') {
-  if (!url || /^https?:\/\//i.test(url) || url.startsWith('data:')) {
-    return url
-  }
-
-  if (url === '/logo.svg') {
-    return url
-  }
-
-  return `${backendOrigin}${url}`
+  appStore.setSiteConfig(data.site_config)
 }
 
 async function handleLogin() {
@@ -59,7 +48,6 @@ async function handleLogin() {
 onMounted(() => {
   loadCaptcha()
   document.title = appStore.siteConfig.adminTitle
-  appStore.loadSiteConfig().catch(() => undefined)
 })
 </script>
 
@@ -67,7 +55,7 @@ onMounted(() => {
   <main class="login-page">
     <section class="login-shell">
       <div class="login-brand">
-        <img v-if="appStore.siteConfig.siteLogo" class="brand-logo" :src="logoUrl(appStore.siteConfig.siteLogo)" alt="logo" />
+        <img v-if="appStore.siteConfig.siteLogo" class="brand-logo" :src="normalizeAssetUrl(appStore.siteConfig.siteLogo)" alt="logo" />
         <div v-else class="brand-mark">{{ appStore.siteConfig.adminTitle.slice(0, 1).toUpperCase() }}</div>
         <div>
           <h1>{{ appStore.siteConfig.adminTitle }}</h1>

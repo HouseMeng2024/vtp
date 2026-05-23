@@ -11,6 +11,19 @@ use think\file\UploadedFile;
 
 class FileService
 {
+    private const CATEGORIES = [
+        ['label' => '图片', 'value' => 'image'],
+        ['label' => '文档', 'value' => 'document'],
+        ['label' => '表格', 'value' => 'sheet'],
+        ['label' => '压缩包', 'value' => 'archive'],
+        ['label' => '其他', 'value' => 'other'],
+    ];
+
+    private const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'];
+    private const DOCUMENT_EXTENSIONS = ['doc', 'docx', 'pdf', 'txt', 'md'];
+    private const SHEET_EXTENSIONS = ['xls', 'xlsx', 'csv'];
+    private const ARCHIVE_EXTENSIONS = ['zip', 'rar', '7z', 'tar', 'gz'];
+
     /**
      * 获取上传文件分页列表。
      */
@@ -192,6 +205,23 @@ class FileService
     }
 
     /**
+     * 获取文件模块可用选项。
+     */
+    public function options(): array
+    {
+        $extensions = $this->allowedExtensions();
+        $imageExtensions = array_values(array_intersect($extensions, self::IMAGE_EXTENSIONS));
+
+        return [
+            'extensions'       => $extensions,
+            'image_extensions' => $imageExtensions,
+            'categories'       => self::CATEGORIES,
+            'accept'           => $this->acceptValue($extensions),
+            'image_accept'     => $this->acceptValue($imageExtensions),
+        ];
+    }
+
+    /**
      * 获取允许上传的扩展名。
      */
     private function allowedExtensions(): array
@@ -261,19 +291,19 @@ class FileService
      */
     private function categoryByExtension(string $extension): string
     {
-        if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'], true)) {
+        if (in_array($extension, self::IMAGE_EXTENSIONS, true)) {
             return 'image';
         }
 
-        if (in_array($extension, ['doc', 'docx', 'pdf', 'txt', 'md'], true)) {
+        if (in_array($extension, self::DOCUMENT_EXTENSIONS, true)) {
             return 'document';
         }
 
-        if (in_array($extension, ['xls', 'xlsx', 'csv'], true)) {
+        if (in_array($extension, self::SHEET_EXTENSIONS, true)) {
             return 'sheet';
         }
 
-        if (in_array($extension, ['zip', 'rar', '7z', 'tar', 'gz'], true)) {
+        if (in_array($extension, self::ARCHIVE_EXTENSIONS, true)) {
             return 'archive';
         }
 
@@ -292,6 +322,14 @@ class FileService
         }
 
         return preg_match('/^[a-z][a-z0-9_:-]{0,49}$/', $scene) ? $scene : 'default';
+    }
+
+    /**
+     * 生成上传组件 accept 属性值。
+     */
+    private function acceptValue(array $extensions): string
+    {
+        return implode(',', array_map(fn (string $extension) => '.' . $extension, $extensions));
     }
 
     /**

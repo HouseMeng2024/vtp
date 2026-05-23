@@ -116,12 +116,8 @@ router.beforeEach(async (to) => {
     }
   }
 
-  if (!authStore.user) {
-    await authStore.fetchProfile()
-  }
-
-  if (authStore.menus.length === 0) {
-    await authStore.fetchMenus()
+  if (!authStore.user || authStore.menus.length === 0) {
+    await authStore.fetchContext()
     addMenuRoutes(authStore.menus)
 
     const resolved = router.resolve(to.fullPath)
