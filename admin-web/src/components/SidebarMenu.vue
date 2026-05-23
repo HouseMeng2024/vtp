@@ -1,8 +1,18 @@
 <script setup lang="ts">
 import {
+  Bell,
+  Document,
+  DocumentChecked,
+  Files,
+  FolderOpened,
   Grid,
+  Key,
   Menu as MenuIcon,
+  Operation,
+  Picture,
   Setting,
+  Tickets,
+  Tools,
   User,
   UserFilled,
 } from '@element-plus/icons-vue'
@@ -14,9 +24,19 @@ defineProps<{
 }>()
 
 const iconMap: Record<string, Component> = {
+  Bell,
+  Document,
+  DocumentChecked,
+  Files,
+  FolderOpened,
   Grid,
+  Key,
   Menu: MenuIcon,
+  Operation,
+  Picture,
   Setting,
+  Tickets,
+  Tools,
   User,
   UserFilled,
 }

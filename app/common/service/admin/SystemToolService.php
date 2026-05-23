@@ -3,6 +3,8 @@ declare (strict_types = 1);
 
 namespace app\common\service\admin;
 
+use app\common\cache\IndexContentCache;
+use app\common\support\ConfigValue;
 use RuntimeException;
 use think\facade\Cache;
 
@@ -15,19 +17,85 @@ class SystemToolService
     {
         return [
             'cache'   => [
-                'driver' => (string) config('cache.default', 'file'),
-                'path'   => runtime_path('cache'),
+                'driver'              => (string) config('cache.default', 'file'),
+                'path'                => runtime_path('cache'),
+                'temp_path'           => runtime_path('temp'),
+                'index_content_count' => IndexContentCache::count(),
+                'types'               => $this->cacheTypes(),
             ],
             'backups' => $this->backups(),
         ];
     }
 
     /**
-     * 清理 ThinkPHP 缓存。
+     * 清理指定缓存。
      */
-    public function clearCache(): void
+    public function clearCache(string $type = 'all'): void
     {
-        Cache::clear();
+        match ($type) {
+            'all'           => $this->clearAllCache(),
+            'framework'     => Cache::clear(),
+            'template'      => $this->removeDirectory(runtime_path('temp')),
+            'config'        => ConfigValue::clear(),
+            'index_content' => IndexContentCache::clearAll(),
+            default         => throw new RuntimeException('缓存类型错误'),
+        };
+    }
+
+    /**
+     * 清理前台内容缓存。
+     */
+    public function clearIndexContentCache(): void
+    {
+        IndexContentCache::clearAll();
+    }
+
+    /**
+     * 获取可清理缓存类型。
+     */
+    private function cacheTypes(): array
+    {
+        return [
+            [
+                'label'       => '全部可重建缓存',
+                'value'       => 'all',
+                'description' => '清理配置缓存、前台内容缓存和模板临时缓存，不清理登录态、验证码等运行状态。',
+                'confirm'     => '',
+            ],
+            [
+                'label'       => '模板临时缓存',
+                'value'       => 'template',
+                'description' => '清理运行时模板临时文件，页面下次访问会重新生成。',
+                'confirm'     => '',
+            ],
+            [
+                'label'       => '配置缓存',
+                'value'       => 'config',
+                'description' => '只清理系统配置缓存，不影响登录态和普通业务缓存。',
+                'confirm'     => '',
+            ],
+            [
+                'label'       => '前台内容缓存',
+                'value'       => 'index_content',
+                'description' => '只清理导航、分类、幻灯等前台内容缓存，不影响登录态和配置缓存。',
+                'confirm'     => '',
+            ],
+            [
+                'label'       => '全局数据缓存',
+                'value'       => 'framework',
+                'description' => '清理整个 ThinkPHP Cache 默认缓存池，会清掉后台登录态、验证码、登录失败计数等运行状态。',
+                'confirm'     => 'CACHE',
+            ],
+        ];
+    }
+
+    /**
+     * 清理可重建业务缓存，不清理登录态等运行状态。
+     */
+    private function clearAllCache(): void
+    {
+        ConfigValue::clear();
+        IndexContentCache::clearAll();
         $this->removeDirectory(runtime_path('temp'));
     }
 

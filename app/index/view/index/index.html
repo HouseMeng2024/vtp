@@ -1,94 +1,150 @@
-<!doctype html>
-<html lang="zh-CN">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{$config.page_title|htmlentities}</title>
-    <meta name="keywords" content="{$config.seo_keywords|default=''|htmlentities}">
-    <meta name="description" content="{$config.seo_description|default=''|htmlentities}">
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+{include file="public/head" /}
+{include file="public/header" /}
 
-        body {
-            margin: 0;
-            min-height: 100vh;
-            background: #f5f7fb;
-            color: #1f2937;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        }
-
-        .page {
-            display: flex;
-            min-height: 100vh;
-            align-items: center;
-            justify-content: center;
-            padding: 32px 16px;
-        }
-
-        .site {
-            width: min(720px, 100%);
-            text-align: center;
-        }
-
-        .site-logo {
-            display: inline-flex;
-            width: 72px;
-            height: 72px;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 20px;
-            border-radius: 16px;
-            background: #ffffff;
-            box-shadow: 0 12px 36px rgba(15, 23, 42, 0.08);
-            overflow: hidden;
-        }
-
-        .site-logo img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-        }
-
-        .site-placeholder {
-            color: #2563eb;
-            font-size: 28px;
-            font-weight: 700;
-        }
-
-        .site-title {
-            margin: 0;
-            color: #111827;
-            font-size: 36px;
-            font-weight: 700;
-            line-height: 1.25;
-        }
-
-        .site-description {
-            margin: 16px auto 0;
-            max-width: 560px;
-            color: #6b7280;
-            font-size: 16px;
-            line-height: 1.8;
-        }
-    </style>
-</head>
-<body>
-    <main class="page">
-        <section class="site">
-            <div class="site-logo">
-                {notempty name="config.logo"}
-                <img src="{$config.logo|htmlentities}" alt="{$config.title|default='VTP'|htmlentities}">
-                {else /}
-                <span class="site-placeholder">V</span>
-                {/notempty}
+<main>
+    <section class="hero">
+        <div class="container">
+            {notempty name="home.banners"}
+            <div class="hero-slider" data-hero-slider>
+                <div class="hero-track">
+                    {volist name="home.banners" id="banner"}
+                    <div class="hero-slide">
+                        <a class="hero-card" href="{$banner.link_url|default='javascript:;'|htmlentities}" target="{$banner.target|default='_self'|htmlentities}">
+                            <div class="hero-copy">
+                                <p class="eyebrow">精选推荐</p>
+                                <h1 class="hero-title">{$banner.title|htmlentities}</h1>
+                                <p class="hero-desc">{$banner.subtitle|htmlentities}</p>
+                            </div>
+                            <img class="hero-image" src="{$banner.image|htmlentities}" alt="{$banner.title|htmlentities}">
+                        </a>
+                    </div>
+                    {/volist}
+                </div>
+                <button class="hero-arrow hero-prev" type="button" data-hero-prev aria-label="上一张">‹</button>
+                <button class="hero-arrow hero-next" type="button" data-hero-next aria-label="下一张">›</button>
+                <div class="hero-dots" data-hero-dots></div>
             </div>
-            <h1 class="site-title">{$config.title|default='VTP'|htmlentities}</h1>
-            {notempty name="config.seo_description"}
-            <p class="site-description">{$config.seo_description|htmlentities}</p>
+            {else /}
+            <div class="hero-card">
+                <div class="hero-copy">
+                    <p class="eyebrow">VTP</p>
+                    <h1 class="hero-title">{$site.title|htmlentities}</h1>
+                    <p class="hero-desc">{$site.seo_description|default='通用后台基础框架'|htmlentities}</p>
+                </div>
+            </div>
             {/notempty}
-        </section>
-    </main>
-</body>
-</html>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container">
+            <div class="section-head">
+                <h2 class="section-title">内容分类</h2>
+            </div>
+            <div class="category-list">
+                {volist name="home.categories" id="category"}
+                <a class="category-pill" href="{:url('index/article/index', ['category_id' => $category['id']])}">
+                    {$category.name|htmlentities}
+                </a>
+          
+                {/volist}
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container">
+            <div class="section-head">
+                <h2 class="section-title">最新文章</h2>
+                <a class="more" href="{:url('index/article/index')}">查看全部</a>
+            </div>
+            {notempty name="home.articles"}
+            <div class="grid">
+                {volist name="home.articles" id="article"}
+                <a class="article-card" href="{:url('index/article/detail', ['id' => $article['id']])}">
+                    {notempty name="article.cover"}<img class="article-cover" src="{$article.cover|htmlentities}" alt="{$article.title|htmlentities}">{/notempty}
+                    <div class="article-body">
+                        <h3 class="article-title">{$article.title|htmlentities}</h3>
+                        <p class="article-summary">{$article.summary|htmlentities}</p>
+                        <div class="article-meta">{$article.publish_time|default=$article.create_time}</div>
+                    </div>
+                </a>
+                {/volist}
+            </div>
+            {else /}
+            <div class="empty">暂无文章</div>
+            {/notempty}
+        </div>
+    </section>
+</main>
+
+<script>
+    (() => {
+        const slider = document.querySelector('[data-hero-slider]')
+
+        if (!slider) {
+            return
+        }
+
+        const track = slider.querySelector('.hero-track')
+        const slides = Array.from(slider.querySelectorAll('.hero-slide'))
+        const prev = slider.querySelector('[data-hero-prev]')
+        const next = slider.querySelector('[data-hero-next]')
+        const dotsWrap = slider.querySelector('[data-hero-dots]')
+        let current = 0
+        let timer = 0
+
+        if (!track || slides.length <= 1) {
+            prev?.remove()
+            next?.remove()
+            dotsWrap?.remove()
+            return
+        }
+
+        const dots = slides.map((_, index) => {
+            const dot = document.createElement('button')
+            dot.className = 'hero-dot'
+            dot.type = 'button'
+            dot.setAttribute('aria-label', `切换到第 ${index + 1} 张`)
+            dot.addEventListener('click', () => go(index, true))
+            dotsWrap.appendChild(dot)
+            return dot
+        })
+
+        function go(index, restart = false) {
+            current = (index + slides.length) % slides.length
+            track.style.transform = `translateX(-${current * 100}%)`
+            dots.forEach((dot, dotIndex) => {
+                dot.classList.toggle('active', dotIndex === current)
+            })
+
+            if (restart) {
+                start()
+            }
+        }
+
+        function start() {
+            window.clearInterval(timer)
+            timer = window.setInterval(() => go(current + 1), 5000)
+        }
+
+        prev.addEventListener('click', () => go(current - 1, true))
+        next.addEventListener('click', () => go(current + 1, true))
+        slider.addEventListener('mouseenter', () => window.clearInterval(timer))
+        slider.addEventListener('mouseleave', start)
+        slider.addEventListener('keydown', (event) => {
+            if (event.key === 'ArrowLeft') {
+                go(current - 1, true)
+            }
+
+            if (event.key === 'ArrowRight') {
+                go(current + 1, true)
+            }
+        })
+
+        go(0)
+        start()
+    })()
+</script>
+
+{include file="public/footer" /}

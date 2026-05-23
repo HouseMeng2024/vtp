@@ -4,6 +4,7 @@ import { Delete, Plus, Refresh, View, ZoomIn } from '@element-plus/icons-vue'
 import type { SystemConfigItem } from '../../../api/config'
 import type { UploadFileRow } from '../../../api/file'
 import FileSelector from '../../../components/FileSelector.vue'
+import RichEditor from '../../../components/RichEditor.vue'
 import { normalizeAssetUrl } from '../../../utils/asset'
 
 type ConfigValue = string | number | Array<string | number>
@@ -197,6 +198,12 @@ function fileDisplayName(url: string | number) {
       type="textarea"
       :rows="4"
       :disabled="disabled"
+    />
+    <RichEditor
+      v-else-if="item.type === 'richtext'"
+      v-model="value as string"
+      :disabled="disabled"
+      scene="setting"
     />
     <el-input-number
       v-else-if="item.type === 'number'"

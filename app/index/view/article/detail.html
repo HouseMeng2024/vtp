@@ -1,0 +1,17 @@
+{include file="public/head" /}
+{include file="public/header" /}
+   
+<main class="container">
+    <article class="detail-card">
+        {notempty name="article.cover"}<img class="detail-cover" src="{$article.cover|htmlentities}" alt="{$article.title|htmlentities}">{/notempty}
+        <div class="detail-body">
+            <h1 class="detail-title">{$article.title|htmlentities}</h1>
+            {notempty name="article.summary"}<p class="detail-summary">{$article.summary|htmlentities}</p>{/notempty}
+            <div class="detail-meta">{$article.author|default=''} · {$article.publish_time|default=$article.create_time} · 阅读 {$article.views}</div>
+            <div class="detail-content">{$article.content|raw}</div>
+            <a class="back" href="{:url('index/article/index')}">返回文章列表</a>
+        </div>
+    </article>
+</main>
+
+{include file="public/footer" /}

@@ -121,6 +121,7 @@ class Permission
             'role/menus'                   => 'admin:role:permission',
             'role/saveMenus'               => 'admin:role:permission',
             'menu/index'                   => ['admin:menu:list', 'admin:role:permission'],
+            'dict/options'                 => ['admin:dict:list', 'admin:content-category:list'],
             'dict/typeOptions'             => 'admin:dict:list',
             'config/index'                 => ['admin:config:list', 'admin:config-manage:list'],
             'config/save'                  => 'admin:config:update',
@@ -141,8 +142,9 @@ class Permission
             'log/operate'                  => 'admin:operate-log:list',
             'log/batchDeleteOperate'       => 'admin:operate-log:delete',
             'log/clearOperate'             => 'admin:operate-log:clear',
-            'system_tool/index'            => 'admin:tool:list',
-            'system_tool/clearCache'       => 'admin:tool:cache-clear',
+            'system_tool/index'            => ['admin:tool:list', 'admin:cache:list'],
+            'system_tool/clearCache'       => ['admin:cache:clear', 'admin:tool:cache-clear'],
+            'system_tool/clearIndexContentCache' => ['admin:cache:clear', 'admin:tool:cache-clear'],
             'system_tool/backups'          => 'admin:tool:backup-list',
             'system_tool/createBackup'     => 'admin:tool:backup-create',
             'system_tool/downloadBackup'   => 'admin:tool:backup-download',
@@ -152,6 +154,7 @@ class Permission
             'code_generator/preview'       => 'admin:code-generator:generate',
             'code_generator/generate'      => 'admin:code-generator:generate',
             'code_generator/cleanup'       => 'admin:code-generator:generate',
+            'article/detail'               => 'admin:article:list',
         ];
 
         return $permissions[$key] ?? null;

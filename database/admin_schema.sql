@@ -315,6 +315,105 @@ CREATE TABLE `vtp_dict_data` (
   KEY `idx_delete_time` (`delete_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='字典数据';
 
+DROP TABLE IF EXISTS `vtp_content_category`;
+CREATE TABLE `vtp_content_category` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `parent_id` bigint unsigned NOT NULL DEFAULT '0' COMMENT '父级ID',
+  `type` varchar(50) NOT NULL DEFAULT 'article' COMMENT '分类类型',
+  `name` varchar(100) NOT NULL COMMENT '分类名称',
+  `slug` varchar(100) NOT NULL DEFAULT '' COMMENT '分类标识',
+  `cover` varchar(500) NOT NULL DEFAULT '' COMMENT '封面图',
+  `description` varchar(500) NOT NULL DEFAULT '' COMMENT '分类描述',
+  `sort` int unsigned NOT NULL DEFAULT '100' COMMENT '排序',
+  `status` tinyint unsigned NOT NULL DEFAULT '1' COMMENT '状态：1正常 0禁用',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+  `delete_time` datetime DEFAULT NULL COMMENT '删除时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_parent_id` (`parent_id`),
+  KEY `idx_type` (`type`),
+  KEY `idx_status` (`status`),
+  KEY `idx_sort` (`sort`),
+  KEY `idx_delete_time` (`delete_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='内容分类';
+
+DROP TABLE IF EXISTS `vtp_article`;
+CREATE TABLE `vtp_article` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `category_id` bigint unsigned NOT NULL DEFAULT '0' COMMENT '分类ID',
+  `title` varchar(200) NOT NULL COMMENT '标题',
+  `subtitle` varchar(200) NOT NULL DEFAULT '' COMMENT '副标题',
+  `cover` varchar(500) NOT NULL DEFAULT '' COMMENT '封面图',
+  `summary` varchar(500) NOT NULL DEFAULT '' COMMENT '摘要',
+  `content` longtext COMMENT '正文',
+  `author` varchar(100) NOT NULL DEFAULT '' COMMENT '作者',
+  `source` varchar(100) NOT NULL DEFAULT '' COMMENT '来源',
+  `source_url` varchar(500) NOT NULL DEFAULT '' COMMENT '来源链接',
+  `keywords` varchar(255) NOT NULL DEFAULT '' COMMENT 'SEO关键词',
+  `description` varchar(500) NOT NULL DEFAULT '' COMMENT 'SEO描述',
+  `views` int unsigned NOT NULL DEFAULT '0' COMMENT '浏览量',
+  `sort` int unsigned NOT NULL DEFAULT '100' COMMENT '排序',
+  `status` tinyint unsigned NOT NULL DEFAULT '1' COMMENT '状态：0下架 1发布',
+  `publish_time` datetime DEFAULT NULL COMMENT '发布时间',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+  `delete_time` datetime DEFAULT NULL COMMENT '删除时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_category_id` (`category_id`),
+  KEY `idx_status` (`status`),
+  KEY `idx_publish_time` (`publish_time`),
+  KEY `idx_sort` (`sort`),
+  KEY `idx_delete_time` (`delete_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='文章';
+
+DROP TABLE IF EXISTS `vtp_navigation`;
+CREATE TABLE `vtp_navigation` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `parent_id` bigint unsigned NOT NULL DEFAULT '0' COMMENT '父级ID',
+  `group` varchar(50) NOT NULL DEFAULT 'main' COMMENT '导航分组',
+  `title` varchar(100) NOT NULL COMMENT '导航名称',
+  `url` varchar(500) NOT NULL DEFAULT '' COMMENT '链接地址',
+  `target` varchar(20) NOT NULL DEFAULT '_self' COMMENT '打开方式',
+  `icon` varchar(100) NOT NULL DEFAULT '' COMMENT '图标',
+  `sort` int unsigned NOT NULL DEFAULT '100' COMMENT '排序',
+  `status` tinyint unsigned NOT NULL DEFAULT '1' COMMENT '状态：1正常 0禁用',
+  `remark` varchar(255) NOT NULL DEFAULT '' COMMENT '备注',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+  `delete_time` datetime DEFAULT NULL COMMENT '删除时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_parent_id` (`parent_id`),
+  KEY `idx_group` (`group`),
+  KEY `idx_status` (`status`),
+  KEY `idx_sort` (`sort`),
+  KEY `idx_delete_time` (`delete_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='导航';
+
+DROP TABLE IF EXISTS `vtp_banner`;
+CREATE TABLE `vtp_banner` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `position` varchar(50) NOT NULL DEFAULT 'home' COMMENT '展示位置',
+  `title` varchar(150) NOT NULL COMMENT '标题',
+  `subtitle` varchar(200) NOT NULL DEFAULT '' COMMENT '副标题',
+  `image` varchar(500) NOT NULL COMMENT '图片',
+  `link_url` varchar(500) NOT NULL DEFAULT '' COMMENT '链接地址',
+  `target` varchar(20) NOT NULL DEFAULT '_self' COMMENT '打开方式',
+  `start_time` datetime DEFAULT NULL COMMENT '开始时间',
+  `end_time` datetime DEFAULT NULL COMMENT '结束时间',
+  `sort` int unsigned NOT NULL DEFAULT '100' COMMENT '排序',
+  `status` tinyint unsigned NOT NULL DEFAULT '1' COMMENT '状态：1正常 0禁用',
+  `remark` varchar(255) NOT NULL DEFAULT '' COMMENT '备注',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+  `delete_time` datetime DEFAULT NULL COMMENT '删除时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_position` (`position`),
+  KEY `idx_status` (`status`),
+  KEY `idx_time` (`start_time`, `end_time`),
+  KEY `idx_sort` (`sort`),
+  KEY `idx_delete_time` (`delete_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='幻灯';
+
 INSERT INTO `vtp_admin_user` (`id`, `username`, `password`, `nickname`, `status`, `create_time`, `update_time`) VALUES
 (1, 'admin', '$2y$12$FUyMIXrNAocLiLyVw1bWO.uTFnCan1dcOKyfNzFCsdlZ63tpFfSaK', '超级管理员', 1, NOW(), NOW());
 
@@ -357,13 +456,15 @@ INSERT INTO `vtp_system_config` (`id`, `group_id`, `tab_id`, `group`, `key`, `va
 
 INSERT INTO `vtp_dict_type` (`id`, `name`, `type`, `sort`, `status`, `remark`, `create_time`, `update_time`) VALUES
 (1, '通用状态', 'common_status', 1, 1, '通用启用禁用状态', NOW(), NOW()),
-(2, '开关状态', 'switch_status', 2, 1, '通用开关状态', NOW(), NOW());
+(2, '开关状态', 'switch_status', 2, 1, '通用开关状态', NOW(), NOW()),
+(3, '内容模型', 'content_model', 3, 1, '内容分类和内容模块使用的模型标识', NOW(), NOW());
 
 INSERT INTO `vtp_dict_data` (`type_id`, `label`, `value`, `tag_type`, `sort`, `status`, `remark`, `create_time`, `update_time`) VALUES
 (1, '正常', '1', 'success', 1, 1, '', NOW(), NOW()),
 (1, '禁用', '0', 'info', 2, 1, '', NOW(), NOW()),
 (2, '开启', '1', 'success', 1, 1, '', NOW(), NOW()),
-(2, '关闭', '0', 'info', 2, 1, '', NOW(), NOW());
+(2, '关闭', '0', 'info', 2, 1, '', NOW(), NOW()),
+(3, '文章', 'article', 'primary', 1, 1, '默认文章内容模型', NOW(), NOW());
 
 INSERT INTO `vtp_admin_menu` (`id`, `parent_id`, `type`, `title`, `permission`, `path`, `component`, `icon`, `sort`, `visible`, `status`, `create_time`, `update_time`) VALUES
 (1, 0, 1, '系统设置', '', '/system', '', 'Setting', 400, 1, 1, NOW(), NOW()),
@@ -384,7 +485,7 @@ INSERT INTO `vtp_admin_menu` (`id`, `parent_id`, `type`, `title`, `permission`, 
 (16, 7, 3, '删除菜单', 'admin:menu:delete', '', '', '', 102, 0, 1, NOW(), NOW()),
 (17, 1, 2, '项目配置', 'admin:config:list', '/system/config', 'system/config/index', 'Tools', 100, 1, 1, NOW(), NOW()),
 (18, 17, 3, '保存项目配置', 'admin:config:update', '', '', '', 100, 0, 1, NOW(), NOW()),
-(57, 1, 2, '配置管理', 'admin:config-manage:list', '/system/config-manage', 'system/config-manage/index', 'Operation', 106, 1, 1, NOW(), NOW()),
+(57, 1, 2, '配置管理', 'admin:config-manage:list', '/system/config-manage', 'system/config-manage/index', 'Operation', 107, 1, 1, NOW(), NOW()),
 (58, 57, 3, '新增配置结构', 'admin:config-manage:create', '', '', '', 100, 0, 1, NOW(), NOW()),
 (59, 57, 3, '编辑配置结构', 'admin:config-manage:update', '', '', '', 101, 0, 1, NOW(), NOW()),
 (60, 57, 3, '删除配置结构', 'admin:config-manage:delete', '', '', '', 102, 0, 1, NOW(), NOW()),
@@ -405,14 +506,15 @@ INSERT INTO `vtp_admin_menu` (`id`, `parent_id`, `type`, `title`, `permission`, 
 (33, 28, 3, '清空登录日志', 'admin:login-log:clear', '', '', '', 101, 0, 1, NOW(), NOW()),
 (34, 29, 3, '删除操作日志', 'admin:operate-log:delete', '', '', '', 100, 0, 1, NOW(), NOW()),
 (35, 29, 3, '清空操作日志', 'admin:operate-log:clear', '', '', '', 101, 0, 1, NOW(), NOW()),
-(36, 1, 2, '系统工具', 'admin:tool:list', '/system/tools', 'system/tool/index', 'Operation', 104, 1, 1, NOW(), NOW()),
-(37, 36, 3, '清理缓存', 'admin:tool:cache-clear', '', '', '', 100, 0, 1, NOW(), NOW()),
+(36, 1, 2, '系统工具', 'admin:tool:list', '/system/tools', 'system/tool/index', 'Operation', 105, 1, 1, NOW(), NOW()),
 (38, 36, 3, '查看数据库备份', 'admin:tool:backup-list', '', '', '', 101, 0, 1, NOW(), NOW()),
 (39, 36, 3, '创建数据库备份', 'admin:tool:backup-create', '', '', '', 102, 0, 1, NOW(), NOW()),
 (40, 36, 3, '恢复数据库备份', 'admin:tool:backup-restore', '', '', '', 103, 0, 1, NOW(), NOW()),
 (41, 36, 3, '删除数据库备份', 'admin:tool:backup-delete', '', '', '', 104, 0, 1, NOW(), NOW()),
 (42, 36, 3, '下载数据库备份', 'admin:tool:backup-download', '', '', '', 105, 0, 1, NOW(), NOW()),
-(49, 1, 2, '代码生成', 'admin:code-generator:list', '/system/code-generator', 'system/code-generator/index', 'Files', 105, 1, 1, NOW(), NOW()),
+(82, 1, 2, '缓存管理', 'admin:cache:list', '/system/cache', 'system/cache/index', 'Operation', 104, 1, 1, NOW(), NOW()),
+(83, 82, 3, '清理缓存', 'admin:cache:clear', '', '', '', 100, 0, 1, NOW(), NOW()),
+(49, 1, 2, '代码生成', 'admin:code-generator:list', '/system/code-generator', 'system/code-generator/index', 'Files', 106, 1, 1, NOW(), NOW()),
 (50, 49, 3, '生成代码', 'admin:code-generator:generate', '', '', '', 100, 0, 1, NOW(), NOW()),
 (43, 1, 2, '消息通知', 'admin:notice:list', '/system/notices', 'system/notice/index', 'Bell', 102, 1, 1, NOW(), NOW()),
 (44, 43, 3, '新增消息', 'admin:notice:create', '', '', '', 100, 0, 1, NOW(), NOW()),
@@ -425,7 +527,28 @@ INSERT INTO `vtp_admin_menu` (`id`, `parent_id`, `type`, `title`, `permission`, 
 (53, 51, 3, '编辑会员', 'admin:member:update', '', '', '', 101, 0, 1, NOW(), NOW()),
 (54, 51, 3, '启用禁用会员', 'admin:member:status', '', '', '', 102, 0, 1, NOW(), NOW()),
 (55, 51, 3, '重置会员密码', 'admin:member:reset-password', '', '', '', 103, 0, 1, NOW(), NOW()),
-(56, 51, 3, '删除会员', 'admin:member:delete', '', '', '', 104, 0, 1, NOW(), NOW());
+(56, 51, 3, '删除会员', 'admin:member:delete', '', '', '', 104, 0, 1, NOW(), NOW()),
+(61, 0, 1, '内容管理', '', '/content', '', 'Grid', 300, 1, 1, NOW(), NOW()),
+(62, 61, 2, '内容分类', 'admin:content-category:list', '/content/categories', 'content/category/index', 'Menu', 100, 1, 1, NOW(), NOW()),
+(63, 62, 3, '新增内容分类', 'admin:content-category:create', '', '', '', 100, 0, 1, NOW(), NOW()),
+(64, 62, 3, '编辑内容分类', 'admin:content-category:update', '', '', '', 101, 0, 1, NOW(), NOW()),
+(65, 62, 3, '启用禁用内容分类', 'admin:content-category:status', '', '', '', 102, 0, 1, NOW(), NOW()),
+(66, 62, 3, '删除内容分类', 'admin:content-category:delete', '', '', '', 103, 0, 1, NOW(), NOW()),
+(67, 61, 2, '文章管理', 'admin:article:list', '/content/articles', 'content/article/index', 'Document', 101, 1, 1, NOW(), NOW()),
+(68, 67, 3, '新增文章', 'admin:article:create', '', '', '', 100, 0, 1, NOW(), NOW()),
+(69, 67, 3, '编辑文章', 'admin:article:update', '', '', '', 101, 0, 1, NOW(), NOW()),
+(70, 67, 3, '发布下架文章', 'admin:article:status', '', '', '', 102, 0, 1, NOW(), NOW()),
+(71, 67, 3, '删除文章', 'admin:article:delete', '', '', '', 103, 0, 1, NOW(), NOW()),
+(72, 61, 2, '导航管理', 'admin:navigation:list', '/content/navigation', 'content/navigation/index', 'Menu', 102, 1, 1, NOW(), NOW()),
+(73, 72, 3, '新增导航', 'admin:navigation:create', '', '', '', 100, 0, 1, NOW(), NOW()),
+(74, 72, 3, '编辑导航', 'admin:navigation:update', '', '', '', 101, 0, 1, NOW(), NOW()),
+(75, 72, 3, '启用禁用导航', 'admin:navigation:status', '', '', '', 102, 0, 1, NOW(), NOW()),
+(76, 72, 3, '删除导航', 'admin:navigation:delete', '', '', '', 103, 0, 1, NOW(), NOW()),
+(77, 61, 2, '幻灯管理', 'admin:banner:list', '/content/banners', 'content/banner/index', 'Picture', 103, 1, 1, NOW(), NOW()),
+(78, 77, 3, '新增幻灯', 'admin:banner:create', '', '', '', 100, 0, 1, NOW(), NOW()),
+(79, 77, 3, '编辑幻灯', 'admin:banner:update', '', '', '', 101, 0, 1, NOW(), NOW()),
+(80, 77, 3, '启用禁用幻灯', 'admin:banner:status', '', '', '', 102, 0, 1, NOW(), NOW()),
+(81, 77, 3, '删除幻灯', 'admin:banner:delete', '', '', '', 103, 0, 1, NOW(), NOW());
 
 INSERT INTO `vtp_admin_notice` (`title`, `content`, `type`, `scope_type`, `scope_ids`, `popup`, `status`, `create_time`, `update_time`) VALUES
 ('系统初始化完成', '通用后台基础模块已经启用，可以继续扩展业务功能。', 'success', 'all', '', 0, 1, NOW(), NOW());

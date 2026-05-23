@@ -10,6 +10,14 @@ export interface SystemToolOverview {
   cache: {
     driver: string
     path: string
+    temp_path: string
+    index_content_count: number
+    types: Array<{
+      label: string
+      value: string
+      description: string
+      confirm: string
+    }>
   }
   backups: SystemToolBackup[]
 }
@@ -18,8 +26,12 @@ export function fetchSystemTools() {
   return request.get<SystemToolOverview>('/system_tool/index').then((response) => response.data)
 }
 
-export function clearSystemCache() {
-  return request.delete<never>('/system_tool/clearCache').then((response) => response.data)
+export function clearSystemCache(type = 'all') {
+  return request.delete<never>('/system_tool/clearCache', { params: { type } }).then((response) => response.data)
+}
+
+export function clearIndexContentCache() {
+  return request.delete<never>('/system_tool/clearIndexContentCache').then((response) => response.data)
 }
 
 export function fetchDatabaseBackups() {

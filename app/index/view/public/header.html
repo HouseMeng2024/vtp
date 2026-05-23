@@ -1,0 +1,26 @@
+<header class="site-header">
+    <div class="container site-nav">
+        <a class="site-brand" href="{:url('index/index/index')}">
+            {notempty name="site.logo"}
+            <img class="brand-logo" src="{$site.logo|htmlentities}" alt="{$site.title|htmlentities}">
+            {else /}
+            <span class="brand-logo brand-placeholder">V</span>
+            {/notempty}
+            <span>{$site.title|htmlentities}</span>
+        </a>
+        <nav class="nav-links">
+            {volist name="navigation" id="nav"}
+            <div class="nav-item">
+                <a class="nav-link" href="{$nav.url|default='/'|htmlentities}" target="{$nav.target|default='_self'|htmlentities}">{$nav.title|htmlentities}</a>
+                {notempty name="nav.children"}
+                <div class="nav-dropdown">
+                    {volist name="nav.children" id="child"}
+                    <a href="{$child.url|default='/'|htmlentities}" target="{$child.target|default='_self'|htmlentities}">{$child.title|htmlentities}</a>
+                    {/volist}
+                </div>
+                {/notempty}
+            </div>
+            {/volist}
+        </nav>
+    </div>
+</header>

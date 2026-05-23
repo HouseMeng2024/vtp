@@ -39,7 +39,7 @@ return [
     // 操作方法后缀
     'action_suffix'         => '',
     // 非路由变量是否使用普通参数方式（用于URL生成）
-    'url_common_param'      => true,
+    'url_common_param'      => false,
     // 操作方法的参数绑定方式 route get param
     'action_bind_param'     => 'get',
     // 请求缓存规则 true为自动规则

@@ -2,7 +2,6 @@
 import { onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
-  clearSystemCache,
   createDatabaseBackup,
   deleteDatabaseBackup,
   downloadDatabaseBackup,
@@ -37,17 +36,6 @@ function formatSize(size: number) {
   }
 
   return `${(size / 1024 / 1024).toFixed(2)} MB`
-}
-
-async function handleClearCache() {
-  await ElMessageBox.prompt('确定清理系统缓存吗？请输入 CLEAR 确认。', '清理确认', {
-    inputPattern: /^CLEAR$/,
-    inputErrorMessage: '请输入 CLEAR',
-    type: 'warning',
-  })
-  await clearSystemCache()
-  ElMessage.success('缓存已清理')
-  loadData()
 }
 
 async function handleCreateBackup() {
@@ -96,26 +84,6 @@ onMounted(loadData)
 
 <template>
   <div v-loading="loading" class="tool-page">
-    <el-card class="page-card" shadow="never">
-      <template #header>
-        <div class="page-toolbar">
-          <div class="page-title">缓存管理</div>
-          <el-button
-            v-if="authStore.hasPermission('admin:tool:cache-clear')"
-            type="primary"
-            @click="handleClearCache"
-          >
-            清理缓存
-          </el-button>
-        </div>
-      </template>
-
-      <el-descriptions :column="1" border>
-        <el-descriptions-item label="缓存驱动">{{ overview?.cache.driver || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="缓存目录">{{ overview?.cache.path || '-' }}</el-descriptions-item>
-      </el-descriptions>
-    </el-card>
-
     <el-card class="page-card table-page-card backup-card" shadow="never">
       <template #header>
         <div class="page-toolbar">
@@ -176,11 +144,8 @@ onMounted(loadData)
 
 <style scoped>
 .tool-page {
-  display: grid;
   height: 100%;
   min-height: 0;
-  grid-template-rows: auto minmax(0, 1fr);
-  gap: 14px;
 }
 
 .backup-card {

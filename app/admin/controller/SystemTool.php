@@ -25,7 +25,20 @@ class SystemTool extends AdminBase
     public function clearCache(): Response
     {
         try {
-            (new SystemToolService())->clearCache();
+            (new SystemToolService())->clearCache((string) $this->request->param('type', 'all'));
+            return ApiResponse::success();
+        } catch (RuntimeException $exception) {
+            return ApiResponse::fail($exception->getMessage());
+        }
+    }
+
+    /**
+     * 清理前台内容缓存。
+     */
+    public function clearIndexContentCache(): Response
+    {
+        try {
+            (new SystemToolService())->clearIndexContentCache();
             return ApiResponse::success();
         } catch (RuntimeException $exception) {
             return ApiResponse::fail($exception->getMessage());

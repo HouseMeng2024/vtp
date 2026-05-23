@@ -14,18 +14,22 @@ VTP Admin 是一个基于 ThinkPHP 8 和 Vue 3 的通用后台管理系统，适
 
 - 登录认证
 - 控制台
+- 内容管理：内容分类、文章管理、导航管理、幻灯管理
 - 管理员管理
 - 角色管理
 - 菜单管理
 - 会员管理
 - 项目配置
+- 配置管理
 - 文件管理和文件选择器
 - 字典管理
 - 通知管理
 - 登录日志
 - 操作日志
 - 系统工具
+- 缓存管理
 - 代码生成器
+- 前台首页和文章展示
 
 ## 目录结构
 
@@ -35,6 +39,7 @@ app/index                前台应用
 app/common/base          公共基类
 app/common/model         公共模型
 app/common/service/admin 后台业务服务
+app/common/service/index 前台业务服务
 admin-web                后台 Vue 前端
 database                 数据库初始化脚本
 public                   Web 入口和静态资源
@@ -113,6 +118,7 @@ http://localhost:5173
 开发环境下，`admin-web/vite.config.ts` 已代理：
 
 - `/admin` 到 `http://127.0.0.1:8000`
+- `/index` 到 `http://127.0.0.1:8000`
 - `/storage` 到 `http://127.0.0.1:8000`
 
 ## 默认账号
@@ -187,12 +193,15 @@ admin-web/dist
 
 - 控制器只负责参数接收、调用 Service、返回响应。
 - 业务逻辑写在 `app/common/service/admin`。
+- 前台业务逻辑写在 `app/common/service/index`。
 - 后台接口权限走数据库菜单权限码。
 - 前端菜单和权限来自后端，不在前端维护重复权限表。
 - 后台路由使用自动路由，`app/admin/route/app.php` 保持极简。
 - 前端接口按业务模块拆到 `admin-web/src/api`。
 - UI 以 Element Plus 默认样式为主，少写自定义颜色。
 - 文件和图片选择统一使用已有文件选择器。
+- 富文本使用 wangEditor v5，图片插入复用文件选择器。
+- 前台内容缓存采用写时清理加 TTL 兜底，后台可在缓存管理中手动清理。
 
 更多 Agent 接手规则见：
 

@@ -35,6 +35,7 @@ class ConfigService
         ['label' => '文本', 'value' => 'text'],
         ['label' => '密码', 'value' => 'password'],
         ['label' => '多行文本', 'value' => 'textarea'],
+        ['label' => '富文本', 'value' => 'richtext'],
         ['label' => '数字', 'value' => 'number'],
         ['label' => '开关', 'value' => 'switch'],
         ['label' => '单选框', 'value' => 'radio'],

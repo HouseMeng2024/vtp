@@ -1,0 +1,46 @@
+{include file="public/head" /}
+{include file="public/header" /}
+
+<main class="container">
+    <div class="page-head">
+        <h1 class="page-title">文章资讯</h1>
+    </div>
+    <div class="article-layout">
+        <aside class="article-side">
+            <h2 class="side-title">分类</h2>
+            <a class="side-link" href="{:url('index/article/index')}">全部文章</a>
+            {volist name="categories" id="category"}
+            <a class="side-link" href="{:url('index/article/index', ['category_id' => $category['id']])}">
+                {$category.name|htmlentities}
+            </a>
+            {notempty name="category.children"}
+            {volist name="category.children" id="child"}
+            <a class="side-link" href="{:url('index/article/index', ['category_id' => $child['id']])}">
+                └ {$child.name|htmlentities}
+            </a>
+            {/volist}
+            {/notempty}
+            {/volist}
+        </aside>
+        <section class="article-list">
+            {notempty name="articles.data"}
+            {volist name="articles.data" id="article"}
+            <a class="list-item" href="{:url('index/article/detail', ['id' => $article['id']])}">
+                {notempty name="article.cover"}<img class="list-cover" src="{$article.cover|htmlentities}"
+                    alt="{$article.title|htmlentities}">{/notempty}
+                <div>
+                    <h2 class="list-title">{$article.title|htmlentities}</h2>
+                    <p class="list-summary">{$article.summary|htmlentities}</p>
+                    <div class="list-meta">{$article.publish_time|default=$article.create_time} · 阅读 {$article.views}
+                    </div>
+                </div>
+            </a>
+            {/volist}
+            {else /}
+            <div class="empty">暂无文章</div>
+            {/notempty}
+        </section>
+    </div>
+</main>
+
+{include file="public/footer" /}
