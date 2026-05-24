@@ -22,6 +22,11 @@ request.interceptors.request.use((config) => {
 request.interceptors.response.use(
   (response) => {
     finishProgress()
+
+    if (response.config.responseType === 'blob' || response.config.responseType === 'arraybuffer') {
+      return response
+    }
+
     const result = response.data as ApiResponse<unknown>
 
     if (result.code !== 0) {

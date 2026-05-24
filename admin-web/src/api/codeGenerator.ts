@@ -57,6 +57,13 @@ export interface CodeGeneratorResult {
   log: string[]
 }
 
+export interface CodeGeneratorStatus {
+  enabled: boolean
+  super_admin: boolean
+  writable: boolean
+  message: string
+}
+
 export interface CodeGeneratorPreviewItem {
   label: string
   path: string
@@ -78,6 +85,10 @@ export interface CodeGeneratorPreview {
 
 export function fetchRecentCodeGenerate() {
   return request.get<CodeGeneratorResult | null>('/code_generator/recent').then((response) => response.data)
+}
+
+export function fetchCodeGeneratorStatus() {
+  return request.get<CodeGeneratorStatus>('/code_generator/status').then((response) => response.data)
 }
 
 export function previewCodeGenerate(data: CodeGeneratorPayload) {

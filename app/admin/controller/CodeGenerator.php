@@ -32,11 +32,20 @@ class CodeGenerator extends AdminBase
     }
 
     /**
+     * 获取代码生成器写入能力状态。
+     */
+    public function status(): Response
+    {
+        return ApiResponse::success($this->writeStatus());
+    }
+
+    /**
      * 根据后台配置生成 CRUD 代码。
      */
     public function generate(): Response
     {
         try {
+            $this->assertCanWrite();
             return ApiResponse::success((new CodeGeneratorService())->generate($this->request->post()));
         } catch (RuntimeException $exception) {
             return ApiResponse::fail($exception->getMessage());
@@ -49,9 +58,43 @@ class CodeGenerator extends AdminBase
     public function cleanup(): Response
     {
         try {
+            $this->assertCanWrite();
             return ApiResponse::success((new CodeGeneratorService())->cleanup($this->request->post()));
         } catch (RuntimeException $exception) {
             return ApiResponse::fail($exception->getMessage());
         }
+    }
+
+    /**
+     * 校验当前环境是否允许写入代码生成结果。
+     */
+    private function assertCanWrite(): void
+    {
+        $status = $this->writeStatus();
+
+        if (!$status['writable']) {
+            throw new RuntimeException($status['message']);
+        }
+    }
+
+    /**
+     * 生成代码写入状态，供前端展示和后端兜底校验共用。
+     */
+    private function writeStatus(): array
+    {
+        $enabled = filter_var(env('CODE_GENERATOR_ENABLED', false), FILTER_VALIDATE_BOOLEAN);
+        $roles = $this->adminUser()['roles'] ?? [];
+        $isSuperAdmin = in_array('super_admin', $roles, true);
+
+        return [
+            'enabled' => $enabled,
+            'super_admin' => $isSuperAdmin,
+            'writable' => $enabled && $isSuperAdmin,
+            'message' => match (true) {
+                !$enabled => '代码生成器写入能力未开启',
+                !$isSuperAdmin => '仅超级管理员可执行代码生成写入操作',
+                default => '',
+            },
+        ];
     }
 }

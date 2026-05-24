@@ -3,6 +3,7 @@ import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import {
   cleanupGeneratedCode,
+  fetchCodeGeneratorStatus,
   fetchRecentCodeGenerate,
   generateCode,
   previewCodeGenerate,
@@ -25,6 +26,12 @@ const result = ref<CodeGeneratorResult | null>(null)
 const optionDialogVisible = ref(false)
 const editingOptionField = ref<CodeGeneratorField | null>(null)
 const dictTypeOptions = ref<DictTypeOption[]>([])
+const generatorStatus = ref({
+  enabled: false,
+  super_admin: false,
+  writable: false,
+  message: '',
+})
 
 const fieldTypes = [
   { label: '短文本', value: 'text' },
@@ -104,6 +111,10 @@ async function loadRecentResult() {
   if (data?.module) {
     result.value = data
   }
+}
+
+async function loadGeneratorStatus() {
+  generatorStatus.value = await fetchCodeGeneratorStatus().catch(() => generatorStatus.value)
 }
 
 function addField() {
@@ -201,6 +212,11 @@ function hasWriteConflict(preview: CodeGeneratorPreview) {
 }
 
 async function handleGenerate() {
+  if (!generatorStatus.value.writable) {
+    ElMessage.warning(generatorStatus.value.message || '当前不能执行代码生成写入操作')
+    return
+  }
+
   await formRef.value?.validate()
 
   if (!form.fields.length) {
@@ -237,6 +253,11 @@ async function handleGenerate() {
 }
 
 async function handleCleanup() {
+  if (!generatorStatus.value.writable) {
+    ElMessage.warning(generatorStatus.value.message || '当前不能执行代码生成写入操作')
+    return
+  }
+
   if (!form.module) {
     ElMessage.warning('请输入模块标识')
     return
@@ -256,6 +277,7 @@ async function handleCleanup() {
 
 onMounted(async () => {
   await loadDictTypeOptions()
+  await loadGeneratorStatus()
   await loadRecentResult()
 })
 </script>
@@ -271,6 +293,8 @@ onMounted(async () => {
               v-if="authStore.hasPermission('admin:code-generator:generate')"
               type="danger"
               plain
+              :disabled="!generatorStatus.writable"
+              :title="generatorStatus.message"
               @click="handleCleanup"
             >
               清理当前模块
@@ -279,6 +303,8 @@ onMounted(async () => {
               v-if="authStore.hasPermission('admin:code-generator:generate')"
               type="primary"
               :loading="generating"
+              :disabled="!generatorStatus.writable"
+              :title="generatorStatus.message"
               @click="handleGenerate"
             >
               生成代码

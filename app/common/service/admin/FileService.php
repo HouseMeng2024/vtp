@@ -7,6 +7,7 @@ use app\common\model\UploadFile;
 use app\common\support\ConfigValue;
 use RuntimeException;
 use think\facade\Filesystem;
+use think\facade\Validate;
 use think\file\UploadedFile;
 
 class FileService
@@ -83,15 +84,8 @@ class FileService
         $extension = strtolower($file->getOriginalExtension());
         $allowedExtensions = $allowedExtensions ?: $this->allowedExtensions();
 
-        if ($extension === '' || !in_array($extension, $allowedExtensions, true)) {
-            throw new RuntimeException('文件类型不允许');
-        }
-
         $maxSize = $this->maxSizeMb() * 1024 * 1024;
-
-        if ($file->getSize() > $maxSize) {
-            throw new RuntimeException('文件大小超过限制');
-        }
+        $this->validateUploadFile($file, $allowedExtensions, $maxSize);
 
         $sha1 = sha1_file($file->getRealPath()) ?: '';
         $scene = $this->normalizeScene($scene) ?: 'default';
@@ -240,6 +234,40 @@ class FileService
     private function maxSizeMb(): int
     {
         return max(1, (int) ConfigValue::getInGroups('upload_max_size', ['system'], 10));
+    }
+
+    /**
+     * 使用 ThinkPHP 内置验证规则校验上传文件。
+     */
+    private function validateUploadFile(UploadedFile $file, array $allowedExtensions, int $maxSize): void
+    {
+        $allowedExtensions = array_values(array_filter(array_map(
+            fn (string $extension) => strtolower(trim($extension)),
+            $allowedExtensions
+        )));
+        $extension = strtolower($file->getOriginalExtension());
+
+        if ($extension === '' || !in_array($extension, $allowedExtensions, true)) {
+            throw new RuntimeException('文件类型不允许');
+        }
+
+        $rules = [
+            'file',
+            'fileSize:' . $maxSize,
+            'fileExt:' . implode(',', $allowedExtensions),
+        ];
+
+        if (in_array($extension, self::IMAGE_EXTENSIONS, true) && $extension !== 'svg') {
+            $rules[] = 'image';
+        }
+
+        $validator = Validate::rule([
+            'file' => implode('|', $rules),
+        ]);
+
+        if (!$validator->check(['file' => $file])) {
+            throw new RuntimeException((string) $validator->getError());
+        }
     }
 
     /**

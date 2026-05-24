@@ -9,19 +9,29 @@ use think\Request;
 class OperateLogService
 {
     /**
+     * 日志里需要脱敏的字段名。
+     */
+    private const SENSITIVE_KEYS = [
+        'password',
+        'old_password',
+        'new_password',
+        'confirm_password',
+        'token',
+        'access_token',
+        'refresh_token',
+        'authorization',
+        'secret',
+        'key',
+    ];
+
+    /**
      * 持久化后台操作日志。
      */
     public function record(Request $request, int $statusCode, float $duration, string $responseBody = ''): void
     {
         $adminUser = $request->adminUser ?? [];
-        $params = $request->param();
+        $params = $this->maskSensitive($request->param());
         $title = $this->operationTitle($request->method(), $request->pathinfo());
-
-        foreach (['password', 'old_password', 'new_password', 'confirm_password'] as $key) {
-            if (isset($params[$key])) {
-                $params[$key] = '******';
-            }
-        }
 
         AdminOperateLog::create([
             'user_id'     => (int) ($adminUser['id'] ?? 0),
@@ -30,12 +40,62 @@ class OperateLogService
             'method'      => $request->method(),
             'path'        => $request->pathinfo(),
             'params'      => json_encode($params, JSON_UNESCAPED_UNICODE),
-            'response'    => mb_substr($responseBody, 0, 1000),
+            'response'    => $this->formatResponseBody($request, $responseBody),
             'ip'          => $request->ip(),
             'user_agent'  => (string) $request->header('user-agent', ''),
             'status_code' => $statusCode,
             'duration_ms' => round($duration * 1000, 2),
         ]);
+    }
+
+    /**
+     * 递归脱敏数组里的敏感字段。
+     */
+    private function maskSensitive(mixed $value): mixed
+    {
+        if (!is_array($value)) {
+            return $value;
+        }
+
+        foreach ($value as $key => $item) {
+            if (is_string($key) && in_array(strtolower($key), self::SENSITIVE_KEYS, true)) {
+                $value[$key] = '******';
+                continue;
+            }
+
+            $value[$key] = $this->maskSensitive($item);
+        }
+
+        return $value;
+    }
+
+    /**
+     * 格式化响应体，避免 token 等敏感信息进入操作日志。
+     */
+    private function formatResponseBody(Request $request, string $responseBody): string
+    {
+        if ($this->isLoginRequest($request)) {
+            return '';
+        }
+
+        $decoded = json_decode($responseBody, true);
+
+        if (is_array($decoded)) {
+            return mb_substr((string) json_encode($this->maskSensitive($decoded), JSON_UNESCAPED_UNICODE), 0, 1000);
+        }
+
+        return mb_substr($responseBody, 0, 1000);
+    }
+
+    /**
+     * 判断是否为管理员登录请求。
+     */
+    private function isLoginRequest(Request $request): bool
+    {
+        $path = trim($request->pathinfo(), '/');
+
+        return strtoupper($request->method()) === 'POST'
+            && (str_ends_with($path, 'auth/login') || $path === 'auth/login');
     }
 
     /**

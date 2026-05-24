@@ -151,6 +151,7 @@ class Permission
             'system_tool/restoreBackup'    => 'admin:tool:backup-restore',
             'system_tool/deleteBackup'     => 'admin:tool:backup-delete',
             'code_generator/recent'        => 'admin:code-generator:list',
+            'code_generator/status'        => 'admin:code-generator:list',
             'code_generator/preview'       => 'admin:code-generator:generate',
             'code_generator/generate'      => 'admin:code-generator:generate',
             'code_generator/cleanup'       => 'admin:code-generator:generate',
